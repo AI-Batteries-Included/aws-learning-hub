@@ -1,0 +1,72 @@
+import TestComponent from '../../components/TestComponent';
+
+export const metadata = {
+  title: 'MDX Test Page',
+  description: 'Testing MDX integration with React components'
+};
+
+<div className="container">
+
+# MDX Test Page
+
+Welcome to our **MDX test page**! This page demonstrates the integration of Markdown content with React components in Next.js.
+
+## What is MDX?
+
+MDX is a powerful tool that allows you to write JSX embedded inside Markdown. This enables you to:
+
+- Write content in Markdown format
+- Embed interactive React components
+- Combine the best of both worlds
+
+### Features Demonstrated
+
+Here are the key features we're testing:
+
+1. **Markdown formatting** - Headers, paragraphs, lists
+2. **Code blocks** - Both inline `code` and block code
+3. **React components** - Interactive elements
+4. **TypeScript support** - Full type safety
+
+## Code Example
+
+Here's a simple code block:
+
+```javascript
+const greeting = "Hello, MDX!";
+console.log(greeting);
+```
+
+And some inline code: `npm install @next/mdx`
+
+## Interactive Component
+
+Below is a React component embedded directly in this MDX file:
+
+<TestComponent />
+
+## Lists and More
+
+### Unordered List
+- First item
+- Second item
+- Third item with **bold text**
+
+### Ordered List
+1. Set up Next.js project
+2. Install MDX dependencies
+3. Configure next.config.js
+4. Create MDX pages
+5. Test functionality
+
+## Conclusion
+
+This test page successfully demonstrates:
+- Markdown rendering
+- React component integration
+- TypeScript compatibility
+- Hot reload functionality
+
+*Visit the homepage at [localhost:3000](http://localhost:3000) to return to the main site.*
+
+</div>
