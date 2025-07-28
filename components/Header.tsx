@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import MainNav from './Navigation/MainNav';
 
 export default function Header() {
   return (
@@ -8,13 +9,7 @@ export default function Header() {
           <Link href="/" className="logo">
             <h1>AWS Learning Hub</h1>
           </Link>
-          <nav className="main-nav">
-            <ul>
-              <li><Link href="/">Home</Link></li>
-              <li><Link href="/about">About</Link></li>
-              <li><Link href="/contact">Contact</Link></li>
-            </ul>
-          </nav>
+          <MainNav />
         </div>
       </div>
     </header>
