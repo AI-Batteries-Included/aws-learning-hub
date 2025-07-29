@@ -650,3 +650,227 @@ a:hover {
     padding: 0;
   }
 }
+
+/* Component Page Template Styles */
+.component-meta {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.meta-badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.category-badge,
+.difficulty-badge,
+.time-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+.category-badge {
+  background: var(--accent);
+  color: white;
+}
+
+.time-badge {
+  background: var(--section-bg);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.aws-services {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.services-label {
+  font-weight: 500;
+  color: var(--foreground);
+  opacity: 0.8;
+}
+
+.service-tag {
+  background: var(--code-bg);
+  color: var(--foreground);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  text-transform: uppercase;
+}
+
+/* Prerequisites Section */
+.prerequisites-section {
+  background: var(--section-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.prerequisites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.prerequisite-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.prerequisite-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.prereq-status {
+  font-size: 1.5rem;
+}
+
+.prereq-content {
+  flex: 1;
+}
+
+.prereq-title {
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+}
+
+.prereq-action {
+  font-size: 0.875rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* Next Steps Section */
+.next-steps-section {
+  background: linear-gradient(135deg, var(--section-bg) 0%, var(--background) 100%);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 2rem;
+  margin-top: 3rem;
+}
+
+.next-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.next-step-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.next-step-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+
+.next-step-title {
+  font-weight: 600;
+  color: var(--foreground);
+  margin: 0 0 0.75rem 0;
+  font-size: 1.1rem;
+}
+
+.next-step-description {
+  color: var(--foreground);
+  opacity: 0.8;
+  line-height: 1.6;
+  margin: 0;
+  flex: 1;
+}
+
+.next-step-arrow {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-size: 1.2rem;
+  color: var(--accent);
+  transition: transform 0.2s ease;
+}
+
+.next-step-card:hover .next-step-arrow {
+  transform: translateX(4px);
+}
+
+/* Component Content Enhancements */
+.component-content {
+  /* Add extra spacing for component pages */
+}
+
+.component-content h2 {
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 0.5rem;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+}
+
+.component-content h3 {
+  color: var(--accent);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .component-meta {
+    align-items: flex-start;
+  }
+  
+  .meta-badges,
+  .aws-services {
+    justify-content: flex-start;
+  }
+  
+  .prerequisites-grid,
+  .next-steps-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .prerequisite-card,
+  .next-step-card {
+    padding: 1rem;
+  }
+  
+  .next-step-arrow {
+    position: static;
+    align-self: flex-end;
+    margin-top: 0.5rem;
+  }
+}

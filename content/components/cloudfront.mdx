@@ -1,10 +1,1113 @@
-# Amazon CloudFront
+# Amazon CloudFront CDN
 
-*Placeholder for CloudFront content*
+Accelerate content delivery worldwide with Amazon's global content delivery network. Learn how to distribute static and dynamic content with low latency and high performance.
 
-Coming soon: Content delivery with Amazon CloudFront CDN.
+## What is Amazon CloudFront?
 
-## Topics to Cover
-- Distribution setup
-- Caching strategies
-- Security features
+Amazon CloudFront is a fast content delivery network (CDN) service that securely delivers data, videos, applications, and APIs to customers globally with low latency and high transfer speeds. It integrates with other AWS services to give developers and businesses an easy way to accelerate content delivery.
+
+### Key Benefits
+- **Global reach** - 450+ edge locations across 90+ cities worldwide
+- **Low latency** - Content cached closer to users for faster delivery
+- **High performance** - Optimized network paths and protocols
+- **Security** - DDoS protection, SSL/TLS certificates, and AWS WAF integration
+- **Cost-effective** - Pay-as-you-go pricing with volume discounts
+- **Easy integration** - Seamless integration with AWS services
+
+## Core Concepts
+
+### Distributions
+The main configuration unit that defines how your content is delivered.
+
+**Distribution Types:**
+- **Web Distribution** - For websites, APIs, and general content
+- **RTMP Distribution** - For streaming media (deprecated, use HLS/DASH instead)
+
+```bash
+# Create distribution via CLI
+aws cloudfront create-distribution \
+    --distribution-config file://distribution-config.json
+```
+
+### Edge Locations
+Global cache servers where content is stored for fast delivery.
+
+**Key Features:**
+- **450+ locations** - Worldwide coverage
+- **Automatic routing** - Users connect to nearest edge
+- **Cache optimization** - Intelligent caching algorithms
+- **Regional caches** - Larger caches for less popular content
+
+### Origins
+The source servers where CloudFront retrieves your content.
+
+**Origin Types:**
+- **S3 Bucket** - Static websites and files
+- **Application Load Balancer** - Dynamic applications
+- **EC2 Instance** - Custom applications
+- **Custom HTTP Server** - Any HTTP server
+
+### Cache Behaviors
+Rules that determine how CloudFront handles requests for your content.
+
+**Behavior Settings:**
+- **Path patterns** - Which URLs this behavior applies to
+- **Viewer protocol** - HTTP/HTTPS requirements
+- **Allowed methods** - GET, POST, PUT, DELETE, etc.
+- **Caching policies** - TTL and cache key settings
+- **Origin request policies** - Headers, query strings, cookies
+
+## Getting Started
+
+### 1. Create Your First Distribution
+
+**Using AWS Console:**
+1. Navigate to CloudFront console
+2. Click "Create Distribution"
+3. Choose origin (S3 bucket or custom)
+4. Configure cache behaviors
+5. Set up SSL certificate
+6. Create distribution
+
+**Using AWS CLI:**
+```bash
+# Create distribution config
+cat > distribution-config.json << 'EOF'
+{
+  "CallerReference": "my-first-distribution-$(date +%s)",
+  "Comment": "My first CloudFront distribution",
+  "DefaultRootObject": "index.html",
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "S3-my-bucket",
+        "DomainName": "my-bucket.s3.amazonaws.com",
+        "S3OriginConfig": {
+          "OriginAccessIdentity": ""
+        }
+      }
+    ]
+  },
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "S3-my-bucket",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "MinTTL": 0,
+    "ForwardedValues": {
+      "QueryString": false,
+      "Cookies": {
+        "Forward": "none"
+      }
+    },
+    "TrustedSigners": {
+      "Enabled": false,
+      "Quantity": 0
+    }
+  },
+  "Enabled": true
+}
+EOF
+
+# Create distribution
+aws cloudfront create-distribution \
+    --distribution-config file://distribution-config.json
+```
+
+**Using CloudFormation:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFront distribution for S3 website'
+
+Parameters:
+  BucketName:
+    Type: String
+    Description: Name of the S3 bucket
+
+Resources:
+  OriginAccessIdentity:
+    Type: AWS::CloudFront::OriginAccessIdentity
+    Properties:
+      OriginAccessIdentityConfig:
+        Comment: !Sub 'OAI for ${BucketName}'
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Sub 'Distribution for ${BucketName}'
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http2
+        IPV6Enabled: true
+        Origins:
+          - Id: S3Origin
+            DomainName: !Sub '${BucketName}.s3.amazonaws.com'
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${OriginAccessIdentity}'
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          Compress: true
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # CachingOptimized
+        PriceClass: PriceClass_100
+
+Outputs:
+  DistributionId:
+    Description: CloudFront Distribution ID
+    Value: !Ref CloudFrontDistribution
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionId'
+      
+  DistributionDomainName:
+    Description: CloudFront Distribution Domain Name
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Export:
+      Name: !Sub '${AWS::StackName}-DistributionDomainName'
+```
+
+### 2. Configure Origin Access Identity (OAI)
+
+Secure access to S3 content through CloudFront only.
+
+```yaml
+# Create OAI
+OriginAccessIdentity:
+  Type: AWS::CloudFront::OriginAccessIdentity
+  Properties:
+    OriginAccessIdentityConfig:
+      Comment: 'OAI for secure S3 access'
+
+# Update S3 bucket policy
+S3BucketPolicy:
+  Type: AWS::S3::BucketPolicy
+  Properties:
+    Bucket: !Ref S3Bucket
+    PolicyDocument:
+      Statement:
+        - Sid: AllowCloudFrontAccess
+          Effect: Allow
+          Principal:
+            AWS: !Sub 'arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${OriginAccessIdentity}'
+          Action: 's3:GetObject'
+          Resource: !Sub '${S3Bucket}/*'
+        - Sid: DenyDirectAccess
+          Effect: Deny
+          Principal: '*'
+          Action: 's3:*'
+          Resource: 
+            - !Sub '${S3Bucket}/*'
+            - !Ref S3Bucket
+          Condition:
+            StringNotEquals:
+              'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+```
+
+### 3. Set Up Custom Domain and SSL
+
+```yaml
+CloudFrontDistribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      Aliases:
+        - www.example.com
+        - example.com
+      ViewerCertificate:
+        AcmCertificateArn: !Ref SSLCertificate
+        SslSupportMethod: sni-only
+        MinimumProtocolVersion: TLSv1.2_2021
+
+SSLCertificate:
+  Type: AWS::CertificateManager::Certificate
+  Properties:
+    DomainName: example.com
+    SubjectAlternativeNames:
+      - www.example.com
+    ValidationMethod: DNS
+    DomainValidationOptions:
+      - DomainName: example.com
+        HostedZoneId: !Ref HostedZone
+      - DomainName: www.example.com
+        HostedZoneId: !Ref HostedZone
+```
+
+## Common Use Cases
+
+### 1. Static Website Hosting
+
+Serve static websites with global CDN acceleration.
+
+**Setup:**
+```yaml
+StaticWebsiteDistribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      DefaultRootObject: index.html
+      CustomErrorResponses:
+        - ErrorCode: 404
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+          ErrorCachingMinTTL: 300
+        - ErrorCode: 403
+          ResponseCode: 200
+          ResponsePagePath: /index.html
+          ErrorCachingMinTTL: 300
+      Origins:
+        - Id: S3Origin
+          DomainName: !GetAtt S3Bucket.DomainName
+          S3OriginConfig:
+            OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${OAI}'
+      DefaultCacheBehavior:
+        TargetOriginId: S3Origin
+        ViewerProtocolPolicy: redirect-to-https
+        Compress: true
+        CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+```
+
+**Deploy static site:**
+```bash
+# Build your site
+npm run build
+
+# Sync to S3
+aws s3 sync ./dist s3://my-website-bucket/ --delete
+
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation \
+    --distribution-id E1234567890 \
+    --paths "/*"
+```
+
+### 2. API Acceleration
+
+Speed up API responses with edge caching.
+
+```yaml
+ApiDistribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      Origins:
+        - Id: ApiGatewayOrigin
+          DomainName: !Sub '${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com'
+          CustomOriginConfig:
+            HTTPPort: 443
+            OriginProtocolPolicy: https-only
+            OriginSSLProtocols:
+              - TLSv1.2
+      DefaultCacheBehavior:
+        TargetOriginId: ApiGatewayOrigin
+        ViewerProtocolPolicy: https-only
+        CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+        OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf
+        AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          - PUT
+          - POST
+          - PATCH
+          - DELETE
+        CachedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+```
+
+### 3. Dynamic Content with Caching
+
+Optimize dynamic applications with intelligent caching.
+
+```yaml
+DynamicAppDistribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      Origins:
+        - Id: ALBOrigin
+          DomainName: !GetAtt ApplicationLoadBalancer.DNSName
+          CustomOriginConfig:
+            HTTPPort: 80
+            HTTPSPort: 443
+            OriginProtocolPolicy: http-only
+      CacheBehaviors:
+        # Cache static assets aggressively
+        - PathPattern: '/static/*'
+          TargetOriginId: ALBOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          Compress: true
+        # Cache API responses with shorter TTL
+        - PathPattern: '/api/*'
+          TargetOriginId: ALBOrigin
+          ViewerProtocolPolicy: https-only
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf
+          Compress: true
+      DefaultCacheBehavior:
+        TargetOriginId: ALBOrigin
+        ViewerProtocolPolicy: redirect-to-https
+        CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # CachingDisabled
+```
+
+### 4. Media Streaming
+
+Deliver video and audio content efficiently.
+
+```yaml
+MediaDistribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      Origins:
+        - Id: MediaS3Origin
+          DomainName: !GetAtt MediaBucket.DomainName
+          S3OriginConfig:
+            OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${MediaOAI}'
+      CacheBehaviors:
+        # HLS streaming
+        - PathPattern: '*.m3u8'
+          TargetOriginId: MediaS3Origin
+          ViewerProtocolPolicy: https-only
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          Compress: false
+        # Video segments
+        - PathPattern: '*.ts'
+          TargetOriginId: MediaS3Origin
+          ViewerProtocolPolicy: https-only
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          Compress: false
+      DefaultCacheBehavior:
+        TargetOriginId: MediaS3Origin
+        ViewerProtocolPolicy: https-only
+        CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+```
+
+## Advanced Features
+
+### Lambda@Edge Functions
+
+Run code at edge locations for request/response processing.
+
+```javascript
+// CloudFront Lambda@Edge function
+exports.handler = async (event) => {
+    const request = event.Records[0].cf.request;
+    const headers = request.headers;
+
+    // Add security headers
+    const response = {
+        status: '200',
+        statusDescription: 'OK',
+        headers: {
+            'strict-transport-security': [{
+                key: 'Strict-Transport-Security',
+                value: 'max-age=31536000; includeSubDomains'
+            }],
+            'content-security-policy': [{
+                key: 'Content-Security-Policy',
+                value: "default-src 'self'"
+            }],
+            'x-frame-options': [{
+                key: 'X-Frame-Options',
+                value: 'DENY'
+            }],
+            'x-content-type-options': [{
+                key: 'X-Content-Type-Options',
+                value: 'nosniff'
+            }]
+        }
+    };
+
+    // Device detection
+    const userAgent = headers['user-agent'][0].value;
+    if (/Mobile|Android|iPhone|iPad/.test(userAgent)) {
+        request.uri = '/mobile' + request.uri;
+    }
+
+    return request;
+};
+```
+
+**Deploy Lambda@Edge:**
+```yaml
+EdgeFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    Runtime: nodejs18.x
+    Handler: index.handler
+    Role: !GetAtt EdgeFunctionRole.Arn
+    Code:
+      ZipFile: |
+        exports.handler = async (event) => {
+            // Your edge function code
+            return event.Records[0].cf.request;
+        };
+
+EdgeFunctionVersion:
+  Type: AWS::Lambda::Version
+  Properties:
+    FunctionName: !Ref EdgeFunction
+
+# Associate with CloudFront
+DefaultCacheBehavior:
+  LambdaFunctionAssociations:
+    - EventType: viewer-request
+      LambdaFunctionARN: !Ref EdgeFunctionVersion
+```
+
+### CloudFront Functions
+
+Lightweight JavaScript functions for simple transformations.
+
+```javascript
+function handler(event) {
+    var request = event.request;
+    var uri = request.uri;
+    
+    // Redirect old URLs
+    if (uri.startsWith('/old-path/')) {
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: {
+                location: { value: uri.replace('/old-path/', '/new-path/') }
+            }
+        };
+    }
+    
+    // Add index.html to directory requests
+    if (uri.endsWith('/')) {
+        request.uri += 'index.html';
+    }
+    
+    return request;
+}
+```
+
+### Origin Groups and Failover
+
+Set up automatic failover between origins.
+
+```yaml
+OriginGroups:
+  Quantity: 1
+  Items:
+    - Id: OriginGroup1
+      FailoverCriteria:
+        StatusCodes:
+          Quantity: 3
+          Items: [403, 404, 500]
+      Members:
+        Quantity: 2
+        Items:
+          - OriginId: PrimaryOrigin
+          - OriginId: SecondaryOrigin
+
+DefaultCacheBehavior:
+  TargetOriginId: OriginGroup1
+```
+
+## Caching Strategies
+
+### Cache Policies
+
+Pre-built and custom policies for different scenarios.
+
+```yaml
+# Custom cache policy
+CustomCachePolicy:
+  Type: AWS::CloudFront::CachePolicy
+  Properties:
+    CachePolicyConfig:
+      Name: MyCustomCachePolicy
+      Comment: Custom caching for my application
+      DefaultTTL: 86400  # 1 day
+      MaxTTL: 31536000   # 1 year
+      MinTTL: 0
+      ParametersInCacheKeyAndForwardedToOrigin:
+        EnableAcceptEncodingGzip: true
+        EnableAcceptEncodingBrotli: true
+        QueryStringsConfig:
+          QueryStringBehavior: whitelist
+          QueryStrings:
+            - version
+            - locale
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Accept
+            - Accept-Language
+        CookiesConfig:
+          CookieBehavior: whitelist
+          Cookies:
+            - session-id
+```
+
+### Cache Invalidation
+
+Clear cached content when you update your origin.
+
+```bash
+# Invalidate specific files
+aws cloudfront create-invalidation \
+    --distribution-id E1234567890 \
+    --paths "/index.html" "/css/style.css"
+
+# Invalidate all files (expensive!)
+aws cloudfront create-invalidation \
+    --distribution-id E1234567890 \
+    --paths "/*"
+
+# Invalidate with wildcard patterns
+aws cloudfront create-invalidation \
+    --distribution-id E1234567890 \
+    --paths "/api/*" "/images/*.jpg"
+```
+
+**Programmatic invalidation:**
+```python
+import boto3
+
+def invalidate_cache(distribution_id, paths):
+    cloudfront = boto3.client('cloudfront')
+    
+    response = cloudfront.create_invalidation(
+        DistributionId=distribution_id,
+        InvalidationBatch={
+            'Paths': {
+                'Quantity': len(paths),
+                'Items': paths
+            },
+            'CallerReference': f'invalidation-{int(time.time())}'
+        }
+    )
+    
+    return response['Invalidation']['Id']
+
+# Usage
+invalidation_id = invalidate_cache('E1234567890', ['/index.html', '/api/*'])
+print(f'Invalidation created: {invalidation_id}')
+```
+
+### Cache Headers Control
+
+Control caching behavior with HTTP headers.
+
+```javascript
+// Express.js middleware for cache control
+app.use('/static', (req, res, next) => {
+    // Cache static assets for 1 year
+    res.set('Cache-Control', 'public, max-age=31536000, immutable');
+    next();
+});
+
+app.use('/api', (req, res, next) => {
+    // Cache API responses for 5 minutes
+    res.set('Cache-Control', 'public, max-age=300');
+    next();
+});
+
+app.use('/dynamic', (req, res, next) => {
+    // Don't cache dynamic content
+    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    next();
+});
+```
+
+## Security Features
+
+### AWS WAF Integration
+
+Protect your application from common attacks.
+
+```yaml
+WebACL:
+  Type: AWS::WAFv2::WebACL
+  Properties:
+    Name: CloudFrontWebACL
+    Scope: CLOUDFRONT
+    DefaultAction:
+      Allow: {}
+    Rules:
+      - Name: AWSManagedRulesCommonRuleSet
+        Priority: 1
+        OverrideAction:
+          None: {}
+        Statement:
+          ManagedRuleGroupStatement:
+            VendorName: AWS
+            Name: AWSManagedRulesCommonRuleSet
+        VisibilityConfig:
+          SampledRequestsEnabled: true
+          CloudWatchMetricsEnabled: true
+          MetricName: CommonRuleSetMetric
+
+CloudFrontDistribution:
+  Type: AWS::CloudFront::Distribution
+  Properties:
+    DistributionConfig:
+      WebACLId: !GetAtt WebACL.Arn
+```
+
+### Signed URLs and Cookies
+
+Control access to private content.
+
+```python
+import boto3
+from datetime import datetime, timedelta
+
+def create_signed_url(url, key_pair_id, private_key_path, expiry_hours=1):
+    """Create signed URL for private CloudFront content"""
+    
+    cloudfront = boto3.client('cloudfront')
+    
+    expire_date = datetime.utcnow() + timedelta(hours=expiry_hours)
+    
+    with open(private_key_path, 'r') as key_file:
+        private_key = key_file.read()
+    
+    signed_url = cloudfront.generate_presigned_url(
+        'get_object',
+        Params={'Bucket': 'bucket', 'Key': 'key'},
+        ExpiresIn=expiry_hours * 3600
+    )
+    
+    return signed_url
+
+# Usage
+signed_url = create_signed_url(
+    'https://d1234567890.cloudfront.net/private/video.mp4',
+    'KEYPAIRID123',
+    '/path/to/private-key.pem',
+    expiry_hours=24
+)
+```
+
+### Response Headers Policy
+
+Add security headers to all responses.
+
+```yaml
+ResponseHeadersPolicy:
+  Type: AWS::CloudFront::ResponseHeadersPolicy
+  Properties:
+    ResponseHeadersPolicyConfig:
+      Name: SecurityHeadersPolicy
+      Comment: Add security headers to responses
+      SecurityHeadersConfig:
+        StrictTransportSecurity:
+          AccessControlMaxAgeSec: 31536000
+          IncludeSubdomains: true
+        ContentTypeOptions:
+          Override: true
+        FrameOptions:
+          FrameOption: DENY
+          Override: true
+        ReferrerPolicy:
+          ReferrerPolicy: strict-origin-when-cross-origin
+          Override: true
+        ContentSecurityPolicy:
+          ContentSecurityPolicy: default-src 'self'; script-src 'self' 'unsafe-inline'
+          Override: true
+
+DefaultCacheBehavior:
+  ResponseHeadersPolicyId: !Ref ResponseHeadersPolicy
+```
+
+## Performance Optimization
+
+### Compression
+
+Enable compression for text-based content.
+
+```yaml
+DefaultCacheBehavior:
+  Compress: true
+  # CloudFront automatically compresses:
+  # - text/html
+  # - text/css
+  # - text/javascript
+  # - application/javascript
+  # - application/json
+  # - text/xml
+```
+
+### HTTP/2 and HTTP/3
+
+Enable modern protocols for better performance.
+
+```yaml
+DistributionConfig:
+  HttpVersion: http2and3
+  # Enables:
+  # - HTTP/2 (multiplexing, server push)
+  # - HTTP/3 (QUIC protocol)
+```
+
+### Origin Request Optimization
+
+Optimize requests sent to your origin.
+
+```yaml
+OriginRequestPolicy:
+  Type: AWS::CloudFront::OriginRequestPolicy
+  Properties:
+    OriginRequestPolicyConfig:
+      Name: OptimizedOriginRequest
+      Comment: Optimized origin requests
+      HeadersConfig:
+        HeaderBehavior: whitelist
+        Headers:
+          - Accept
+          - Accept-Language
+          - Authorization
+      QueryStringsConfig:
+        QueryStringBehavior: whitelist
+        QueryStrings:
+          - version
+          - format
+      CookiesConfig:
+        CookieBehavior: none
+```
+
+## Monitoring and Analytics
+
+### CloudWatch Metrics
+
+Monitor distribution performance and usage.
+
+```yaml
+# Custom CloudWatch dashboard
+CloudFrontDashboard:
+  Type: AWS::CloudWatch::Dashboard
+  Properties:
+    DashboardName: CloudFront-Monitoring
+    DashboardBody: !Sub |
+      {
+        "widgets": [
+          {
+            "type": "metric",
+            "properties": {
+              "metrics": [
+                [ "AWS/CloudFront", "Requests", "DistributionId", "${CloudFrontDistribution}" ],
+                [ ".", "BytesDownloaded", ".", "." ],
+                [ ".", "BytesUploaded", ".", "." ]
+              ],
+              "period": 300,
+              "stat": "Sum",
+              "region": "us-east-1",
+              "title": "CloudFront Traffic"
+            }
+          }
+        ]
+      }
+
+# CloudWatch alarms
+HighErrorRateAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: CloudFront-HighErrorRate
+    AlarmDescription: CloudFront error rate is high
+    MetricName: 4xxErrorRate
+    Namespace: AWS/CloudFront
+    Statistic: Average
+    Period: 300
+    EvaluationPeriods: 2
+    Threshold: 5
+    ComparisonOperator: GreaterThanThreshold
+    Dimensions:
+      - Name: DistributionId
+        Value: !Ref CloudFrontDistribution
+    AlarmActions:
+      - !Ref SNSAlert
+```
+
+### Real-time Logs
+
+Get detailed request logs for analysis.
+
+```yaml
+RealtimeLogConfig:
+  Type: AWS::CloudFront::RealtimeLogConfig
+  Properties:
+    Name: MyRealtimeLogConfig
+    EndPoints:
+      - StreamType: Kinesis
+        KinesisStreamConfig:
+          RoleArn: !GetAtt RealtimeLogRole.Arn
+          StreamArn: !GetAtt LoggingStream.Arn
+    Fields:
+      - timestamp
+      - c-ip
+      - sc-status
+      - cs-method
+      - cs-uri-stem
+      - cs-bytes
+      - sc-bytes
+      - time-taken
+
+DefaultCacheBehavior:
+  RealtimeLogConfigArn: !GetAtt RealtimeLogConfig.Arn
+```
+
+## Cost Optimization
+
+### Price Classes
+
+Choose edge location coverage based on your needs.
+
+```yaml
+DistributionConfig:
+  # PriceClass_All - All edge locations (highest cost)
+  # PriceClass_200 - North America, Europe, Asia, Middle East, Africa
+  # PriceClass_100 - North America and Europe only (lowest cost)
+  PriceClass: PriceClass_100
+```
+
+### Request-based Pricing
+
+Optimize for your traffic patterns.
+
+```bash
+# Monitor cost with AWS CLI
+aws cloudfront get-distribution-config \
+    --id E1234567890 \
+    --query 'DistributionConfig.PriceClass'
+
+# Analyze usage patterns
+aws logs start-query \
+    --log-group-name /aws/cloudfront/distribution/E1234567890 \
+    --start-time $(date -d "1 month ago" +%s) \
+    --end-time $(date +%s) \
+    --query-string 'fields @timestamp, @message | filter @message like /GET/ | stats count() by bin(5m)'
+```
+
+## Best Practices
+
+### Security
+- ✅ **Use HTTPS only** - Redirect HTTP to HTTPS
+- ✅ **Enable OAI** - Secure S3 bucket access
+- ✅ **Implement WAF** - Protect against attacks
+- ✅ **Add security headers** - Use response headers policy
+- ✅ **Use signed URLs** - For private content
+- ✅ **Regular security reviews** - Monitor access patterns
+
+### Performance
+- ✅ **Enable compression** - For text-based content
+- ✅ **Use HTTP/2** - Enable modern protocols
+- ✅ **Optimize cache policies** - Match your content patterns
+- ✅ **Minimize origin requests** - Cache effectively
+- ✅ **Use Lambda@Edge wisely** - For necessary transformations only
+
+### Cost Management
+- ✅ **Choose appropriate price class** - Based on user geography
+- ✅ **Monitor usage patterns** - Analyze CloudWatch metrics
+- ✅ **Optimize cache hit ratios** - Reduce origin requests
+- ✅ **Use lifecycle policies** - For S3 origins
+- ✅ **Review invalidation usage** - Minimize invalidation costs
+
+### Operations
+- ✅ **Set up monitoring** - CloudWatch dashboards and alarms
+- ✅ **Enable access logging** - For troubleshooting
+- ✅ **Use infrastructure as code** - CloudFormation/CDK
+- ✅ **Implement blue/green deployments** - For safer updates
+- ✅ **Document cache policies** - For team knowledge
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Slow Cache Invalidation:**
+```bash
+# Check invalidation status
+aws cloudfront get-invalidation \
+    --distribution-id E1234567890 \
+    --id I1234567890
+
+# Alternative: Use versioning instead
+aws s3 cp index.html s3://my-bucket/index-v2.html
+# Update your application to reference new version
+```
+
+**2. Cache Hit Ratio Too Low:**
+```bash
+# Analyze cache statistics
+aws cloudwatch get-metric-statistics \
+    --namespace AWS/CloudFront \
+    --metric-name CacheHitRate \
+    --dimensions Name=DistributionId,Value=E1234567890 \
+    --start-time 2024-01-01T00:00:00Z \
+    --end-time 2024-01-02T00:00:00Z \
+    --period 3600 \
+    --statistics Average
+```
+
+**3. Origin Errors:**
+```bash
+# Check origin response time
+aws cloudwatch get-metric-statistics \
+    --namespace AWS/CloudFront \
+    --metric-name OriginLatency \
+    --dimensions Name=DistributionId,Value=E1234567890 \
+    --start-time $(date -d "1 hour ago" --iso-8601) \
+    --end-time $(date --iso-8601) \
+    --period 300 \
+    --statistics Average,Maximum
+```
+
+## Real-World Example: E-commerce Website CDN
+
+Let's build a complete CDN setup for an e-commerce website:
+
+**Architecture:**
+```
+Users → CloudFront → S3 (Static) + ALB (Dynamic) → EC2/ECS
+```
+
+**1. Infrastructure Setup:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  # S3 bucket for static assets
+  StaticAssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-static-assets'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # Origin Access Identity
+  StaticAssetsOAI:
+    Type: AWS::CloudFront::OriginAccessIdentity
+    Properties:
+      OriginAccessIdentityConfig:
+        Comment: OAI for static assets
+
+  # CloudFront Distribution
+  EcommerceDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: E-commerce website distribution
+        Aliases:
+          - www.example.com
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SSLCertificate
+          SslSupportMethod: sni-only
+        HttpVersion: http2
+        IPV6Enabled: true
+        PriceClass: PriceClass_All
+        
+        Origins:
+          # Static assets from S3
+          - Id: S3StaticOrigin
+            DomainName: !GetAtt StaticAssetsBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${StaticAssetsOAI}'
+          
+          # Dynamic content from ALB
+          - Id: ALBDynamicOrigin
+            DomainName: !GetAtt ApplicationLoadBalancer.DNSName
+            CustomOriginConfig:
+              HTTPPort: 80
+              HTTPSPort: 443
+              OriginProtocolPolicy: https-only
+        
+        CacheBehaviors:
+          # Static assets - aggressive caching
+          - PathPattern: '/static/*'
+            TargetOriginId: S3StaticOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            Compress: true
+          
+          # Product images - long cache
+          - PathPattern: '/images/*'
+            TargetOriginId: S3StaticOrigin
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+            Compress: true
+          
+          # API endpoints - short cache
+          - PathPattern: '/api/*'
+            TargetOriginId: ALBDynamicOrigin
+            ViewerProtocolPolicy: https-only
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+            OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf
+            AllowedMethods:
+              - GET
+              - HEAD
+              - OPTIONS
+              - PUT
+              - POST
+              - PATCH
+              - DELETE
+        
+        DefaultCacheBehavior:
+          TargetOriginId: ALBDynamicOrigin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf
+          Compress: true
+        
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /404.html
+            ErrorCachingMinTTL: 300
+          - ErrorCode: 500
+            ResponseCode: 200
+            ResponsePagePath: /error.html
+            ErrorCachingMinTTL: 0
+
+  # Route 53 DNS
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: www.example.com
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt EcommerceDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID
+```
+
+**2. Deployment Script:**
+```bash
+#!/bin/bash
+
+# Build and deploy static assets
+echo "Building static assets..."
+npm run build
+
+# Sync to S3 with cache headers
+echo "Uploading to S3..."
+aws s3 sync ./dist/static s3://my-ecommerce-static/ \
+    --exclude "*.html" \
+    --cache-control "public, max-age=31536000, immutable"
+
+aws s3 sync ./dist/static s3://my-ecommerce-static/ \
+    --include "*.html" \
+    --cache-control "public, max-age=3600"
+
+# Invalidate changed files only
+echo "Creating invalidation..."
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | grep -E '\.(js|css|html)$' | sed 's/^/\//')
+
+if [ -n "$CHANGED_FILES" ]; then
+    aws cloudfront create-invalidation \
+        --distribution-id $DISTRIBUTION_ID \
+        --paths $CHANGED_FILES
+fi
+
+echo "Deployment complete!"
+```
+
+This comprehensive CloudFront guide covers everything from basic CDN concepts to advanced enterprise patterns. Practice with the examples and gradually build more complex content delivery solutions!
