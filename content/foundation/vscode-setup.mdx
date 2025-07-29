@@ -1,10 +1,546 @@
 # VS Code Setup
 
-*Placeholder for VS Code setup content*
+Configure Visual Studio Code for an optimal AWS development experience. This comprehensive guide covers essential extensions, configuration settings, and development workflows for AWS projects.
 
-Coming soon: Configure VS Code for optimal AWS development experience.
+## Why VS Code for AWS Development?
 
-## Topics to Cover
-- Essential extensions
-- Configuration settings
-- Development workflows
+Visual Studio Code is the most popular IDE among AWS developers due to its:
+
+- **Excellent AWS Integration** - Official AWS Toolkit extension
+- **Lightweight** - Fast startup and low resource usage
+- **Extensible** - Rich ecosystem of AWS-related extensions
+- **Cross-Platform** - Works on Windows, macOS, and Linux
+- **Free** - Open source with professional features
+- **Active Community** - Continuous improvements and support
+
+## Installation
+
+### Download VS Code
+1. Visit [code.visualstudio.com](https://code.visualstudio.com)
+2. Download for your operating system
+3. Run the installer with default settings
+
+### Alternative Installation Methods
+
+**macOS (Homebrew):**
+```bash
+brew install --cask visual-studio-code
+```
+
+**Windows (Chocolatey):**
+```powershell
+choco install vscode
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+sudo apt update
+sudo apt install code
+```
+
+## Essential AWS Extensions
+
+### 1. AWS Toolkit (Must-Have)
+**Extension ID:** `amazonwebservices.aws-toolkit-vscode`
+
+The official AWS extension provides comprehensive AWS integration.
+
+**Features:**
+- AWS Explorer for browsing resources
+- Lambda function development and debugging
+- S3 bucket management
+- CloudFormation template support
+- Step Functions visualization
+- SAM application development
+
+**Installation:**
+```bash
+code --install-extension amazonwebservices.aws-toolkit-vscode
+```
+
+### 2. CloudFormation (Essential)
+**Extension ID:** `aws-scripting-guy.cform`
+
+Enhanced CloudFormation template support.
+
+**Features:**
+- Syntax highlighting for CF templates
+- Auto-completion for resources and properties
+- Template validation
+- Parameter and output IntelliSense
+
+### 3. YAML (Required)
+**Extension ID:** `redhat.vscode-yaml`
+
+Better YAML support for CloudFormation, SAM, and Kubernetes.
+
+**Features:**
+- Advanced YAML syntax highlighting
+- Schema validation
+- Auto-completion
+- Formatting and linting
+
+### 4. JSON Tools (Helpful)
+**Extension ID:** `eriklynd.json-tools`
+
+Enhanced JSON editing for AWS policies and configurations.
+
+**Features:**
+- Pretty print JSON
+- Minify JSON
+- Sort JSON keys
+- JSON validation
+
+### 5. Thunder Client (API Testing)
+**Extension ID:** `rangav.vscode-thunder-client`
+
+Postman alternative built into VS Code for testing AWS APIs.
+
+**Features:**
+- REST API testing
+- Environment variables
+- Collection management
+- GraphQL support
+
+### 6. GitLens (Version Control)
+**Extension ID:** `eamodio.gitlens`
+
+Supercharge Git capabilities in VS Code.
+
+**Features:**
+- Inline Git blame
+- Code lens
+- Repository explorer
+- File history and comparisons
+
+### 7. Docker (Containerization)
+**Extension ID:** `ms-azuretools.vscode-docker`
+
+Essential for container-based AWS deployments.
+
+**Features:**
+- Dockerfile syntax highlighting
+- Docker image management
+- Container debugging
+- Docker Compose support
+
+### Installation Script
+Install all essential extensions at once:
+
+```bash
+# Core AWS Extensions
+code --install-extension amazonwebservices.aws-toolkit-vscode
+code --install-extension aws-scripting-guy.cform
+code --install-extension redhat.vscode-yaml
+
+# Development Tools
+code --install-extension eriklynd.json-tools
+code --install-extension rangav.vscode-thunder-client
+code --install-extension eamodio.gitlens
+code --install-extension ms-azuretools.vscode-docker
+
+# Language Support
+code --install-extension ms-python.python
+code --install-extension ms-vscode.vscode-typescript-next
+```
+
+## VS Code Configuration
+
+### Settings.json Configuration
+
+Create or update your VS Code settings file:
+
+**Location:**
+- **Windows:** `%APPDATA%\Code\User\settings.json`
+- **macOS:** `~/Library/Application Support/Code/User/settings.json`
+- **Linux:** `~/.config/Code/User/settings.json`
+
+```json
+{
+  // AWS Toolkit Configuration
+  "aws.samcli.location": "/usr/local/bin/sam",
+  "aws.profile": "default",
+  "aws.telemetry": false,
+  
+  // CloudFormation Schema Validation
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/awslabs/goformation/master/schema/cloudformation.schema.json": [
+      "*.template.yaml",
+      "*.template.yml",
+      "template.yaml",
+      "template.yml"
+    ]
+  },
+  
+  // Python Configuration (for Lambda)
+  "python.defaultInterpreterPath": "/usr/bin/python3",
+  "python.linting.enabled": true,
+  "python.linting.pylintEnabled": true,
+  "python.formatting.provider": "black",
+  
+  // JSON Configuration
+  "json.schemas": [
+    {
+      "fileMatch": ["*policy*.json"],
+      "url": "https://raw.githubusercontent.com/aws/aws-toolkit-vscode/master/src/schemas/iam-policy.json"
+    }
+  ],
+  
+  // Editor Settings
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": true,
+  "editor.formatOnSave": true,
+  "editor.rulers": [80, 120],
+  
+  // File Settings
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1000,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  
+  // Terminal Settings
+  "terminal.integrated.shell.osx": "/bin/zsh",
+  "terminal.integrated.shell.linux": "/bin/bash",
+  
+  // Git Configuration
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+  
+  // Extension Settings
+  "gitlens.currentLine.enabled": false,
+  "thunder-client.workspaceRelativePath": ".thunder-tests"
+}
+```
+
+### Workspace Settings
+
+For AWS-specific projects, create `.vscode/settings.json` in your project root:
+
+```json
+{
+  "python.defaultInterpreterPath": "./venv/bin/python",
+  "aws.samcli.template.location": "./template.yaml",
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml"
+  },
+  "yaml.customTags": [
+    "!Ref",
+    "!GetAtt",
+    "!Join sequence",
+    "!Sub",
+    "!GetAZs",
+    "!ImportValue",
+    "!Select sequence",
+    "!Split sequence",
+    "!Base64"
+  ]
+}
+```
+
+## Code Snippets
+
+### CloudFormation Snippets
+
+Create `.vscode/snippets.json`:
+
+```json
+{
+  "CloudFormation Template": {
+    "prefix": "cf-template",
+    "body": [
+      "AWSTemplateFormatVersion: '2010-09-09'",
+      "Transform: AWS::Serverless-2016-10-31",
+      "Description: ${1:Template description}",
+      "",
+      "Parameters:",
+      "  ${2:ParameterName}:",
+      "    Type: String",
+      "    Default: ${3:default-value}",
+      "",
+      "Globals:",
+      "  Function:",
+      "    Timeout: 30",
+      "    Runtime: python3.9",
+      "",
+      "Resources:",
+      "  ${4:ResourceName}:",
+      "    Type: ${5:AWS::Serverless::Function}",
+      "    Properties:",
+      "      ${6:Property}: ${7:Value}",
+      "",
+      "Outputs:",
+      "  ${8:OutputName}:",
+      "    Description: ${9:Output description}",
+      "    Value: !Ref ${4:ResourceName}"
+    ],
+    "description": "Basic CloudFormation template structure"
+  },
+  
+  "Lambda Function": {
+    "prefix": "cf-lambda",
+    "body": [
+      "${1:FunctionName}:",
+      "  Type: AWS::Serverless::Function",
+      "  Properties:",
+      "    CodeUri: ${2:src/}",
+      "    Handler: ${3:app.lambda_handler}",
+      "    Runtime: ${4:python3.9}",
+      "    Environment:",
+      "      Variables:",
+      "        ${5:ENV_VAR}: ${6:value}",
+      "    Events:",
+      "      ${7:ApiEvent}:",
+      "        Type: Api",
+      "        Properties:",
+      "          Path: ${8:/hello}",
+      "          Method: ${9:GET}"
+    ],
+    "description": "SAM Lambda function definition"
+  }
+}
+```
+
+### Python Lambda Snippets
+
+```json
+{
+  "Lambda Handler": {
+    "prefix": "lambda-handler",
+    "body": [
+      "import json",
+      "import logging",
+      "",
+      "logger = logging.getLogger()",
+      "logger.setLevel(logging.INFO)",
+      "",
+      "def lambda_handler(event, context):",
+      "    \"\"\"",
+      "    ${1:Function description}",
+      "    \"\"\"",
+      "    logger.info(f'Event: {json.dumps(event)}')",
+      "    ",
+      "    try:",
+      "        ${2:# Your code here}",
+      "        ",
+      "        return {",
+      "            'statusCode': 200,",
+      "            'headers': {",
+      "                'Content-Type': 'application/json',",
+      "                'Access-Control-Allow-Origin': '*'",
+      "            },",
+      "            'body': json.dumps({",
+      "                'success': True,",
+      "                'message': '${3:Success message}'",
+      "            })",
+      "        }",
+      "    except Exception as e:",
+      "        logger.error(f'Error: {str(e)}')",
+      "        return {",
+      "            'statusCode': 500,",
+      "            'body': json.dumps({",
+      "                'success': False,",
+      "                'error': str(e)",
+      "            })",
+      "        }"
+    ],
+    "description": "AWS Lambda function handler template"
+  }
+}
+```
+
+## Development Workflows
+
+### 1. Lambda Development
+
+**Project Structure:**
+```
+my-lambda-project/
+├── .vscode/
+│   ├── settings.json
+│   ├── launch.json
+│   └── tasks.json
+├── src/
+│   ├── app.py
+│   └── requirements.txt
+├── tests/
+│   └── test_app.py
+├── template.yaml
+└── README.md
+```
+
+**Debug Configuration (launch.json):**
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "SAM CLI - Debug Local",
+      "type": "python",
+      "request": "attach",
+      "port": 5890,
+      "host": "localhost",
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/src",
+          "remoteRoot": "/var/task"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Tasks Configuration (tasks.json):**
+```json
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "SAM Build",
+      "type": "shell",
+      "command": "sam",
+      "args": ["build"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "SAM Local Start API",
+      "type": "shell",
+      "command": "sam",
+      "args": ["local", "start-api", "--debug-port", "5890"],
+      "group": "test",
+      "isBackground": true
+    }
+  ]
+}
+```
+
+### 2. CloudFormation Development
+
+**Workflow:**
+1. Create template with auto-completion
+2. Validate syntax as you type
+3. Use AWS Toolkit to deploy
+4. Monitor resources in AWS Explorer
+
+**Key Shortcuts:**
+- `Ctrl/Cmd + Shift + P` → "AWS: Deploy SAM Application"
+- `Ctrl/Cmd + Shift + P` → "AWS: Sync SAM Application"
+
+### 3. Multi-Account Development
+
+**Profile Configuration:**
+```json
+{
+  "aws.profile": "dev",
+  "aws.profiles": {
+    "dev": {
+      "region": "us-east-1"
+    },
+    "staging": {
+      "region": "us-west-2"
+    },
+    "prod": {
+      "region": "eu-west-1"
+    }
+  }
+}
+```
+
+## Keyboard Shortcuts
+
+### Essential Shortcuts
+- `Ctrl/Cmd + Shift + P` - Command Palette
+- `Ctrl/Cmd + ,` - Settings
+- `Ctrl/Cmd + `` ` - Toggle Terminal
+- `Ctrl/Cmd + Shift + E` - Explorer
+- `F5` - Start Debugging
+- `Ctrl/Cmd + F5` - Run Without Debugging
+
+### AWS-Specific Shortcuts
+- `Ctrl/Cmd + Shift + A` - AWS Explorer
+- `Alt + A` - AWS Command Palette
+
+## Troubleshooting
+
+### Common Issues
+
+**AWS Toolkit Not Working:**
+```bash
+# Check AWS CLI configuration
+aws configure list
+
+# Verify credentials
+aws sts get-caller-identity
+
+# Reinstall AWS Toolkit
+code --uninstall-extension amazonwebservices.aws-toolkit-vscode
+code --install-extension amazonwebservices.aws-toolkit-vscode
+```
+
+**SAM CLI Issues:**
+```bash
+# Check SAM CLI installation
+sam --version
+
+# Update SAM CLI
+pip3 install --upgrade aws-sam-cli
+
+# Verify Docker is running
+docker version
+```
+
+**Python Path Issues:**
+```bash
+# Find Python path
+which python3
+
+# Update VS Code settings
+# "python.defaultInterpreterPath": "/path/to/python3"
+```
+
+## Productivity Tips
+
+### 1. Use Command Palette
+Access any AWS function quickly: `Ctrl/Cmd + Shift + P` → type "AWS"
+
+### 2. Integrated Terminal
+Keep terminal open in VS Code for AWS CLI commands
+
+### 3. File Watchers
+Enable auto-save to see CloudFormation validation in real-time
+
+### 4. Multi-Root Workspaces
+Organize related AWS projects in one workspace
+
+### 5. Remote Development
+Use WSL, SSH, or containers for consistent development environments
+
+## Next Steps
+
+With VS Code configured for AWS development:
+
+1. **Start with basics** - [AWS Basics](./aws-basics) to understand core concepts
+2. **Set up your environment** - [Environment Setup](./environment-setup) for complete toolchain
+3. **Learn Git workflows** - [GitHub Fundamentals](./github-fundamentals) for version control
+4. **Build your first project** - Choose a service from Components section
+
+## Additional Resources
+
+- [VS Code AWS Toolkit Documentation](https://docs.aws.amazon.com/toolkit-for-vscode/)
+- [VS Code Keyboard Shortcuts](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf)
+- [AWS SAM CLI User Guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-using.html)
+- [CloudFormation Template Reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-reference.html)
+
+Your VS Code is now optimized for AWS development with professional-grade tools and workflows!

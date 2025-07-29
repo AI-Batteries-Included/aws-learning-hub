@@ -1,10 +1,322 @@
 # Architecture Overview
 
-*Placeholder for architecture overview content*
+Learn the fundamental architectural patterns and design principles that guide successful AWS implementations. This guide covers the AWS Well-Architected Framework and common patterns used in production environments.
 
-Coming soon: Understanding AWS architectural patterns and design principles.
+## AWS Well-Architected Framework
 
-## Topics to Cover
-- Well-Architected Framework
-- Common patterns
-- Design principles
+The AWS Well-Architected Framework provides a set of best practices to help you build secure, high-performing, resilient, and efficient infrastructure for your applications.
+
+### The Six Pillars
+
+#### 1. Operational Excellence
+Run and monitor systems to deliver business value and continually improve supporting processes and procedures.
+
+**Key Principles:**
+- Perform operations as code
+- Make frequent, small, reversible changes  
+- Refine operations procedures frequently
+- Anticipate failure
+- Learn from all operational failures
+
+**Implementation:**
+```yaml
+# Example: CloudFormation template with operations automation
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 300
+      DefaultCooldown: 300
+```
+
+#### 2. Security
+Protect information, systems, and assets while delivering business value through risk assessments and mitigation strategies.
+
+**Key Principles:**
+- Implement strong identity foundation
+- Apply security at all layers
+- Enable traceability
+- Automate security best practices
+- Protect data in transit and at rest
+- Keep people away from data
+- Prepare for security events
+
+**Implementation:**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject"],
+      "Resource": "arn:aws:s3:::my-bucket/*",
+      "Condition": {
+        "Bool": {
+          "aws:SecureTransport": "true"
+        }
+      }
+    }
+  ]
+}
+```
+
+#### 3. Reliability
+Ensure a workload performs its intended function correctly and consistently when expected.
+
+**Key Principles:**
+- Automatically recover from failure
+- Test recovery procedures
+- Scale horizontally to increase availability
+- Stop guessing capacity
+- Manage change in automation
+
+#### 4. Performance Efficiency
+Use computing resources efficiently to meet system requirements and maintain efficiency as demand changes.
+
+**Key Principles:**
+- Democratize advanced technologies
+- Go global in minutes
+- Use serverless architectures
+- Experiment more often
+- Consider mechanical sympathy
+
+#### 5. Cost Optimization
+Run systems to deliver business value at the lowest price point.
+
+**Key Principles:**
+- Implement cloud financial management
+- Adopt a consumption model
+- Measure overall efficiency
+- Stop spending money on heavy lifting
+- Analyze and attribute expenditure
+
+#### 6. Sustainability
+Minimize the environmental impacts of running cloud workloads.
+
+**Key Principles:**
+- Understand your impact
+- Establish sustainability goals
+- Maximize utilization
+- Anticipate and adopt new, more efficient hardware and software offerings
+- Use managed services
+- Reduce the downstream impact of your cloud workloads
+
+## Common Architectural Patterns
+
+### 1. Three-Tier Architecture
+
+The traditional web application pattern with presentation, application, and data tiers.
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Presentation  │    │   Application   │    │      Data       │
+│   Tier (Web)    │◄──►│   Tier (API)    │◄──►│   Tier (DB)     │
+│                 │    │                 │    │                 │
+│ - CloudFront    │    │ - API Gateway   │    │ - RDS           │
+│ - S3 (Static)   │    │ - Lambda        │    │ - DynamoDB      │
+│ - Route 53      │    │ - ECS/EKS       │    │ - ElastiCache   │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### 2. Microservices Architecture
+
+Decompose applications into small, independent services.
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Service   │    │   Service   │    │   Service   │
+│      A      │    │      B      │    │      C      │
+│             │    │             │    │             │
+│ - Lambda    │    │ - ECS       │    │ - Lambda    │
+│ - DynamoDB  │    │ - RDS       │    │ - S3        │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │
+       └───────────────────┼───────────────────┘
+                           │
+                  ┌─────────────┐
+                  │ API Gateway │
+                  │    ALB      │
+                  └─────────────┘
+```
+
+### 3. Event-Driven Architecture
+
+Use events to trigger and communicate between decoupled services.
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Producer  │───►│    Event    │───►│  Consumer   │
+│             │    │    Bus      │    │             │
+│ - Lambda    │    │             │    │ - Lambda    │
+│ - S3        │    │ - EventBridge│    │ - SQS       │
+│ - DynamoDB  │    │ - SNS       │    │ - Step Func │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+
+### 4. Serverless Architecture
+
+Build and run applications without managing servers.
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  Frontend   │    │    API      │    │   Storage   │
+│             │    │             │    │             │
+│ - S3        │───►│ - API GW    │───►│ - DynamoDB  │
+│ - CloudFront│    │ - Lambda    │    │ - S3        │
+│ - Route 53  │    │ - Cognito   │    │ - RDS Proxy │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+
+## Design Principles
+
+### 1. Design for Failure
+Assume everything will fail and design accordingly.
+
+**Implementation:**
+- Use multiple Availability Zones
+- Implement health checks
+- Create redundant systems
+- Use auto-scaling
+- Plan for disaster recovery
+
+### 2. Decouple Components
+Reduce interdependencies between application components.
+
+**Techniques:**
+- Use queues (SQS, EventBridge)
+- Implement service discovery
+- Use API gateways
+- Employ circuit breakers
+- Design for eventual consistency
+
+### 3. Implement Elasticity
+Design systems that can scale up and down based on demand.
+
+**AWS Services:**
+- Auto Scaling Groups
+- Application Load Balancer
+- CloudWatch scaling policies
+- Lambda concurrent execution
+- DynamoDB on-demand
+
+### 4. Think Parallel
+Design for parallel processing to improve performance.
+
+**Strategies:**
+- Parallel Lambda executions
+- SQS batch processing
+- Step Functions parallel states
+- Multi-threaded applications
+- Distributed computing patterns
+
+## Security by Design
+
+### Defense in Depth
+Implement security at multiple layers.
+
+```
+┌─────────────────────────────────────────┐
+│              Network Layer              │ ← VPC, Security Groups, NACLs
+├─────────────────────────────────────────┤
+│            Application Layer            │ ← WAF, API Gateway, Lambda
+├─────────────────────────────────────────┤
+│               Data Layer                │ ← Encryption, IAM, KMS
+├─────────────────────────────────────────┤
+│            Infrastructure               │ ← CloudTrail, Config, GuardDuty
+└─────────────────────────────────────────┘
+```
+
+### Zero Trust Architecture
+Never trust, always verify.
+
+**Implementation:**
+- Implement least privilege access
+- Use multi-factor authentication
+- Encrypt data everywhere
+- Monitor and log everything
+- Verify every transaction
+
+## Cost Optimization Strategies
+
+### 1. Right-Sizing
+Choose appropriate instance types and sizes.
+
+```bash
+# Use AWS Cost Explorer and Trusted Advisor
+aws ce get-rightsizing-recommendation
+```
+
+### 2. Reserved Instances and Savings Plans
+Commit to usage for cost savings.
+
+### 3. Spot Instances
+Use spare capacity for fault-tolerant workloads.
+
+### 4. Lifecycle Policies
+Automatically transition data to cheaper storage classes.
+
+```json
+{
+  "Rules": [{
+    "Status": "Enabled",
+    "Transitions": [{
+      "Days": 30,
+      "StorageClass": "STANDARD_IA"
+    }, {
+      "Days": 365,
+      "StorageClass": "GLACIER"
+    }]
+  }]
+}
+```
+
+## Monitoring and Observability
+
+### Three Pillars of Observability
+
+1. **Metrics** - CloudWatch, custom metrics
+2. **Logs** - CloudWatch Logs, ELK stack
+3. **Traces** - X-Ray, distributed tracing
+
+### Implementation Example
+
+```python
+import boto3
+import json
+from aws_xray_sdk.core import xray_recorder
+
+@xray_recorder.capture('lambda_handler')
+def lambda_handler(event, context):
+    # Add custom metadata
+    xray_recorder.put_metadata('event', event)
+    
+    # Custom metrics
+    cloudwatch = boto3.client('cloudwatch')
+    cloudwatch.put_metric_data(
+        Namespace='MyApp',
+        MetricData=[{
+            'MetricName': 'ProcessedRequests',
+            'Value': 1,
+            'Unit': 'Count'
+        }]
+    )
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Success')
+    }
+```
+
+## Next Steps
+
+Now that you understand AWS architectural principles:
+
+1. **Set up your environment** - [Environment Setup](./environment-setup)
+2. **Learn AWS basics** - [AWS Basics](./aws-basics)
+3. **Configure your IDE** - [VS Code Setup](./vscode-setup)
+4. **Master version control** - [GitHub Fundamentals](./github-fundamentals)
+5. **Start building** - Choose a service from the Components section
+
+Remember: good architecture is not about using every AWS service, but about choosing the right services for your specific requirements and constraints.
