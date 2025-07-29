@@ -1,0 +1,699 @@
+# Amazon Route 53 DNS
+
+Configure DNS management and intelligent routing with Amazon's highly available domain name system. Learn how to register domains, manage DNS records, and implement advanced routing policies.
+
+## What is Amazon Route 53?
+
+Amazon Route 53 is a highly available and scalable Domain Name System (DNS) web service designed to route end users to Internet applications by translating domain names into IP addresses. It connects user requests to infrastructure running in AWS and also outside of AWS.
+
+### Key Benefits
+- **High availability** - 100% uptime SLA with global anycast network
+- **Scalable** - Handles millions of queries without performance degradation
+- **Cost-effective** - Pay only for hosted zones and queries you use
+- **Health checks** - Automatic failover and traffic routing
+- **Integration** - Seamless integration with AWS services
+- **Security** - DNS Security Extensions (DNSSEC) support
+
+## Core Concepts
+
+### Hosted Zones
+A container for DNS records for a particular domain and its subdomains.
+
+**Types of Hosted Zones:**
+- **Public Hosted Zone** - Routes traffic on the Internet
+- **Private Hosted Zone** - Routes traffic within Amazon VPCs
+
+```bash
+# Create hosted zone
+aws route53 create-hosted-zone \
+    --name example.com \
+    --caller-reference $(date +%s)
+
+# List hosted zones
+aws route53 list-hosted-zones
+```
+
+### DNS Record Types
+Different types of DNS records serve different purposes.
+
+**Common Record Types:**
+- **A Record** - Maps domain to IPv4 address
+- **AAAA Record** - Maps domain to IPv6 address
+- **CNAME Record** - Maps domain to another domain
+- **MX Record** - Mail exchange servers
+- **TXT Record** - Text information
+- **NS Record** - Name servers
+- **SOA Record** - Start of authority
+
+### Routing Policies
+Control how Route 53 responds to DNS queries.
+
+**Available Policies:**
+- **Simple** - Single resource record
+- **Weighted** - Route traffic based on weights
+- **Latency-based** - Route to lowest latency region
+- **Failover** - Active-passive failover
+- **Geolocation** - Route based on user location
+- **Geoproximity** - Route based on geographic location with bias
+- **Multivalue Answer** - Return multiple IP addresses
+
+## Getting Started
+
+### 1. Register a Domain
+
+**Using AWS Console:**
+1. Navigate to Route 53 console
+2. Click "Domain registration"
+3. Search for available domain
+4. Complete registration process
+5. Domain automatically gets hosted zone
+
+**Using AWS CLI:**
+```bash
+# Check domain availability
+aws route53domains check-domain-availability \
+    --domain-name example.com
+
+# Register domain
+aws route53domains register-domain \
+    --domain-name example.com \
+    --duration-in-years 1 \
+    --admin-contact file://admin-contact.json \
+    --registrant-contact file://registrant-contact.json \
+    --tech-contact file://tech-contact.json
+```
+
+### 2. Create Hosted Zone
+
+**Using CloudFormation:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Route 53 hosted zone and basic records'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Domain name for the hosted zone
+    Default: example.com
+
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneTags:
+        - Key: Environment
+          Value: Production
+        - Key: Project
+          Value: WebApp
+
+  # A record pointing to CloudFront distribution
+  WebsiteARecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID
+
+  # CNAME for www subdomain
+  WwwCNAME:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Sub 'www.${DomainName}'
+      Type: CNAME
+      TTL: 300
+      ResourceRecords:
+        - !Ref DomainName
+
+Outputs:
+  HostedZoneId:
+    Description: Hosted Zone ID
+    Value: !Ref HostedZone
+    Export:
+      Name: !Sub '${AWS::StackName}-HostedZoneId'
+      
+  NameServers:
+    Description: Name servers for the domain
+    Value: !Join [',', !GetAtt HostedZone.NameServers]
+    Export:
+      Name: !Sub '${AWS::StackName}-NameServers'
+```
+
+### 3. Create Basic DNS Records
+
+```bash
+# Create A record
+aws route53 change-resource-record-sets \
+    --hosted-zone-id Z123456789 \
+    --change-batch '{
+        "Changes": [{
+            "Action": "CREATE",
+            "ResourceRecordSet": {
+                "Name": "example.com",
+                "Type": "A",
+                "TTL": 300,
+                "ResourceRecords": [{"Value": "192.0.2.1"}]
+            }
+        }]
+    }'
+
+# Create CNAME record
+aws route53 change-resource-record-sets \
+    --hosted-zone-id Z123456789 \
+    --change-batch '{
+        "Changes": [{
+            "Action": "CREATE",
+            "ResourceRecordSet": {
+                "Name": "www.example.com",
+                "Type": "CNAME",
+                "TTL": 300,
+                "ResourceRecords": [{"Value": "example.com"}]
+            }
+        }]
+    }'
+```
+
+## Common Routing Patterns
+
+### 1. Simple Routing
+
+Route all traffic to a single resource.
+
+```yaml
+SimpleRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: api.example.com
+    Type: A
+    TTL: 300
+    ResourceRecords:
+      - 192.0.2.1
+```
+
+### 2. Weighted Routing
+
+Distribute traffic across multiple resources based on weights.
+
+```yaml
+# Primary server (70% traffic)
+WeightedRecordPrimary:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 60
+    SetIdentifier: Primary
+    Weight: 70
+    ResourceRecords:
+      - 192.0.2.1
+
+# Secondary server (30% traffic)
+WeightedRecordSecondary:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 60
+    SetIdentifier: Secondary
+    Weight: 30
+    ResourceRecords:
+      - 192.0.2.2
+```
+
+### 3. Latency-Based Routing
+
+Route traffic to the region with lowest latency.
+
+```yaml
+# US East region
+LatencyRecordUSEast:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 60
+    SetIdentifier: USEast
+    Region: us-east-1
+    ResourceRecords:
+      - 192.0.2.1
+
+# EU West region
+LatencyRecordEUWest:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 60
+    SetIdentifier: EUWest
+    Region: eu-west-1
+    ResourceRecords:
+      - 192.0.2.2
+```
+
+### 4. Failover Routing
+
+Implement active-passive failover.
+
+```yaml
+# Primary record with health check
+FailoverPrimary:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 60
+    SetIdentifier: Primary
+    Failover: PRIMARY
+    HealthCheckId: !Ref PrimaryHealthCheck
+    ResourceRecords:
+      - 192.0.2.1
+
+# Secondary record
+FailoverSecondary:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 60
+    SetIdentifier: Secondary
+    Failover: SECONDARY
+    ResourceRecords:
+      - 192.0.2.2
+
+# Health check for primary
+PrimaryHealthCheck:
+  Type: AWS::Route53::HealthCheck
+  Properties:
+    Type: HTTPS
+    ResourcePath: /health
+    FullyQualifiedDomainName: primary.example.com
+    Port: 443
+    RequestInterval: 30
+    FailureThreshold: 3
+```
+
+### 5. Geolocation Routing
+
+Route traffic based on geographic location of users.
+
+```yaml
+# Default record for unspecified locations
+GeolocationDefault:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 300
+    SetIdentifier: Default
+    GeoLocation:
+      CountryCode: '*'
+    ResourceRecords:
+      - 192.0.2.1
+
+# US users
+GeolocationUS:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 300
+    SetIdentifier: US
+    GeoLocation:
+      CountryCode: US
+    ResourceRecords:
+      - 192.0.2.2
+
+# European users
+GeolocationEU:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: app.example.com
+    Type: A
+    TTL: 300
+    SetIdentifier: EU
+    GeoLocation:
+      ContinentCode: EU
+    ResourceRecords:
+      - 192.0.2.3
+```
+
+## Health Checks and Monitoring
+
+### Creating Health Checks
+
+Monitor endpoint health for automatic failover.
+
+```yaml
+WebServerHealthCheck:
+  Type: AWS::Route53::HealthCheck
+  Properties:
+    Type: HTTPS
+    ResourcePath: /health
+    FullyQualifiedDomainName: api.example.com
+    Port: 443
+    RequestInterval: 30
+    FailureThreshold: 3
+    Tags:
+      - Key: Name
+        Value: WebServer Health Check
+      - Key: Environment
+        Value: Production
+
+# Health check with CloudWatch alarm
+DatabaseHealthCheck:
+  Type: AWS::Route53::HealthCheck
+  Properties:
+    Type: CALCULATED
+    ChildHealthChecks:
+      - !Ref DatabasePrimaryHealthCheck
+      - !Ref DatabaseSecondaryHealthCheck
+    HealthThreshold: 1
+    CloudWatchAlarmRegion: us-east-1
+    InsufficientDataHealthStatus: Failure
+```
+
+### Health Check Types
+
+**Available Types:**
+- **HTTP/HTTPS** - Check web endpoints
+- **TCP** - Check TCP port connectivity
+- **String matching** - Check for specific content
+- **Calculated** - Combine multiple health checks
+- **CloudWatch alarm** - Based on CloudWatch metrics
+
+```bash
+# Create HTTP health check
+aws route53 create-health-check \
+    --caller-reference $(date +%s) \
+    --health-check-config '{
+        "Type": "HTTPS",
+        "ResourcePath": "/health",
+        "FullyQualifiedDomainName": "api.example.com",
+        "Port": 443,
+        "RequestInterval": 30,
+        "FailureThreshold": 3
+    }'
+
+# List health checks
+aws route53 list-health-checks
+```
+
+## AWS Service Integration
+
+### CloudFront Integration
+
+Use alias records to point to CloudFront distributions.
+
+```yaml
+CloudFrontAliasRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: !Ref DomainName
+    Type: A
+    AliasTarget:
+      DNSName: !GetAtt CloudFrontDistribution.DomainName
+      HostedZoneId: Z2FDTNDATAQYW2  # CloudFront hosted zone ID
+      EvaluateTargetHealth: false
+```
+
+### Application Load Balancer Integration
+
+Point domain to ALB with alias records.
+
+```yaml
+ALBAliasRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: api.example.com
+    Type: A
+    AliasTarget:
+      DNSName: !GetAtt ApplicationLoadBalancer.DNSName
+      HostedZoneId: !GetAtt ApplicationLoadBalancer.CanonicalHostedZoneID
+      EvaluateTargetHealth: true
+```
+
+### S3 Website Integration
+
+Point domain to S3 static website.
+
+```yaml
+S3WebsiteRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: !Ref DomainName
+    Type: A
+    AliasTarget:
+      DNSName: !GetAtt S3Bucket.WebsiteURL
+      HostedZoneId: Z3AQBSTGFYJSTF  # S3 website hosted zone ID for us-east-1
+```
+
+## Security Best Practices
+
+### DNSSEC (DNS Security Extensions)
+
+Enable DNSSEC for your hosted zone.
+
+```bash
+# Enable DNSSEC
+aws route53 enable-hosted-zone-dnssec \
+    --hosted-zone-id Z123456789
+
+# Get DNSSEC status
+aws route53 get-dnssec \
+    --hosted-zone-id Z123456789
+```
+
+### Access Control
+
+Use IAM policies to control Route 53 access.
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ListHostedZones",
+        "route53:GetHostedZone"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "route53:ChangeResourceRecordSets",
+        "route53:GetChange"
+      ],
+      "Resource": [
+        "arn:aws:route53:::hostedzone/Z123456789",
+        "arn:aws:route53:::change/*"
+      ]
+    }
+  ]
+}
+```
+
+## Performance Optimization
+
+### TTL Settings
+
+Choose appropriate TTL values for different record types.
+
+```yaml
+# Short TTL for frequently changing records
+DynamicRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    TTL: 60  # 1 minute
+    
+# Long TTL for stable records
+StaticRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    TTL: 86400  # 24 hours
+```
+
+## Monitoring and Troubleshooting
+
+### CloudWatch Metrics
+
+Monitor Route 53 performance and health.
+
+```yaml
+HealthCheckAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: Route53-HealthCheck-Failed
+    AlarmDescription: Route 53 health check failed
+    MetricName: HealthCheckStatus
+    Namespace: AWS/Route53
+    Statistic: Minimum
+    Period: 60
+    EvaluationPeriods: 2
+    Threshold: 1
+    ComparisonOperator: LessThanThreshold
+    Dimensions:
+      - Name: HealthCheckId
+        Value: !Ref WebServerHealthCheck
+    AlarmActions:
+      - !Ref SNSAlert
+```
+
+### DNS Testing Tools
+
+Test DNS resolution and performance.
+
+```bash
+# Test DNS resolution
+dig example.com A
+nslookup example.com
+
+# Test from specific DNS server
+dig @8.8.8.8 example.com A
+
+# Test with trace
+dig +trace example.com A
+
+# Check all record types
+dig example.com ANY
+
+# Test health check endpoint
+curl -I https://api.example.com/health
+```
+
+## Best Practices
+
+### DNS Configuration
+- ✅ **Use appropriate TTL values** - Balance performance and flexibility
+- ✅ **Implement health checks** - For critical endpoints
+- ✅ **Use alias records** - For AWS resources when possible
+- ✅ **Configure backup DNS** - Secondary DNS providers for critical domains
+- ✅ **Monitor query patterns** - Optimize for common queries
+
+### Security
+- ✅ **Enable DNSSEC** - For domains requiring highest security
+- ✅ **Use private hosted zones** - For internal services
+- ✅ **Implement DNS firewall** - Block malicious domains
+- ✅ **Regular security audits** - Review DNS configurations
+- ✅ **Access control** - Use IAM for Route 53 permissions
+
+### Performance
+- ✅ **Use latency-based routing** - For global applications
+- ✅ **Implement geographic routing** - Based on user location
+- ✅ **Optimize health check intervals** - Balance cost and detection speed
+- ✅ **Use CloudWatch monitoring** - Track DNS performance
+- ✅ **Regular testing** - Verify DNS resolution from different locations
+
+## Real-World Example: Multi-Region Web Application
+
+Let's build a complete DNS setup for a global web application:
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Multi-region DNS setup with failover'
+
+Parameters:
+  DomainName:
+    Type: String
+    Default: myapp.com
+
+Resources:
+  # Primary hosted zone
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+      HostedZoneTags:
+        - Key: Environment
+          Value: Production
+
+  # Health checks for each region
+  USEastHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      Type: HTTPS
+      ResourcePath: /health
+      FullyQualifiedDomainName: us-east.myapp.com
+      Port: 443
+      RequestInterval: 30
+      FailureThreshold: 3
+
+  EUWestHealthCheck:
+    Type: AWS::Route53::HealthCheck
+    Properties:
+      Type: HTTPS
+      ResourcePath: /health
+      FullyQualifiedDomainName: eu-west.myapp.com
+      Port: 443
+      RequestInterval: 30
+      FailureThreshold: 3
+
+  # Latency-based routing with health checks
+  USEastRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: api.myapp.com
+      Type: A
+      TTL: 60
+      SetIdentifier: USEast
+      Region: us-east-1
+      HealthCheckId: !Ref USEastHealthCheck
+      ResourceRecords:
+        - 192.0.2.1
+
+  EUWestRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: api.myapp.com
+      Type: A
+      TTL: 60
+      SetIdentifier: EUWest
+      Region: eu-west-1
+      HealthCheckId: !Ref EUWestHealthCheck
+      ResourceRecords:
+        - 192.0.2.2
+
+  # CloudFront distribution for static content
+  StaticContentRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZone
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CloudFrontDistribution.DomainName
+        HostedZoneId: Z2FDTNDATAQYW2
+
+Outputs:
+  HostedZoneId:
+    Description: Hosted Zone ID
+    Value: !Ref HostedZone
+    Export:
+      Name: !Sub '${AWS::StackName}-HostedZoneId'
+      
+  NameServers:
+    Description: Name servers for the domain
+    Value: !Join [',', !GetAtt HostedZone.NameServers]
+```
+
+This comprehensive Route 53 guide covers everything from basic DNS concepts to advanced multi-region routing patterns. Practice with the examples and gradually build more complex DNS solutions!

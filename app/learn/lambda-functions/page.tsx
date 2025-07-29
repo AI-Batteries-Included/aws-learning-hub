@@ -1,5 +1,5 @@
 import ComponentPageTemplate from '../../../components/ComponentPageTemplate';
-import LambdaContent from '../../../content/components/lambda.mdx';
+import LambdaContent from '../../../content/components/lambda-optimized.mdx';
 
 export const metadata = {
   title: 'AWS Lambda Functions - AWS Learning Hub',

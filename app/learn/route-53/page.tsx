@@ -1,5 +1,5 @@
 import ComponentPageTemplate from '../../../components/ComponentPageTemplate';
-import Route53Content from '../../../content/components/route53.mdx';
+import Route53Content from '../../../content/components/route53-optimized.mdx';
 
 export const metadata = {
   title: 'Amazon Route 53 DNS - AWS Learning Hub',

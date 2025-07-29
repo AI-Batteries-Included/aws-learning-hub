@@ -1,5 +1,5 @@
 import ComponentPageTemplate from '../../../components/ComponentPageTemplate';
-import CloudFrontContent from '../../../content/components/cloudfront.mdx';
+import CloudFrontContent from '../../../content/components/cloudfront-optimized.mdx';
 
 export const metadata = {
   title: 'Amazon CloudFront CDN - AWS Learning Hub',
