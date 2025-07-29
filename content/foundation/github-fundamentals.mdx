@@ -1,10 +1,635 @@
 # GitHub Fundamentals
 
-*Placeholder for GitHub fundamentals content*
+Master essential GitHub skills for AWS development workflows. This comprehensive guide covers version control, collaboration, and CI/CD integration for professional AWS projects.
 
-Coming soon: Essential GitHub skills for AWS development workflows.
+## Why GitHub for AWS Development?
 
-## Topics to Cover
-- Repository management
-- Version control best practices
-- Collaboration workflows
+GitHub is the industry standard for version control and collaboration, especially important for AWS projects due to:
+
+- **Infrastructure as Code** - Version control CloudFormation templates
+- **CI/CD Integration** - GitHub Actions for AWS deployments  
+- **Team Collaboration** - Code reviews and project management
+- **AWS Integration** - Native AWS service connections
+- **Security** - Advanced security features and compliance
+- **Documentation** - Rich markdown support for project docs
+
+## Getting Started with GitHub
+
+### 1. Create GitHub Account
+1. Visit [github.com](https://github.com)
+2. Choose username (use professional naming)
+3. Verify email address
+4. Enable two-factor authentication (2FA)
+
+### 2. Install Git
+**Windows:**
+```bash
+# Download from: https://git-scm.com/
+# Or use winget
+winget install Git.Git
+```
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install git
+
+# Or download from: https://git-scm.com/
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt-get install git
+
+# CentOS/RHEL
+sudo yum install git
+```
+
+### 3. Configure Git
+```bash
+# Set your identity
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+
+# Set default branch name
+git config --global init.defaultBranch main
+
+# Set default editor
+git config --global core.editor "code --wait"
+
+# Enable helpful colorization
+git config --global color.ui auto
+
+# Verify configuration
+git config --list
+```
+
+## Essential Git Commands
+
+### Repository Operations
+
+**Initialize Repository:**
+```bash
+# Create new repository
+git init
+
+# Clone existing repository
+git clone https://github.com/username/repository.git
+
+# Clone with SSH (recommended)
+git clone git@github.com:username/repository.git
+```
+
+**Basic Workflow:**
+```bash
+# Check status
+git status
+
+# Add files to staging
+git add filename.txt
+git add .  # Add all files
+
+# Commit changes
+git commit -m "Add CloudFormation template for S3 bucket"
+
+# Push to remote
+git push origin main
+```
+
+### Branching and Merging
+
+**Branch Operations:**
+```bash
+# List branches
+git branch
+git branch -a  # Include remote branches
+
+# Create new branch
+git checkout -b feature/new-lambda-function
+
+# Switch branches
+git checkout main
+git switch feature/new-lambda-function  # Git 2.23+
+
+# Delete branch
+git branch -d feature/completed-feature
+git push origin --delete feature/completed-feature
+```
+
+**Merging:**
+```bash
+# Merge feature branch into main
+git checkout main
+git merge feature/new-lambda-function
+
+# Delete merged branch
+git branch -d feature/new-lambda-function
+```
+
+## GitHub Workflow for AWS Projects
+
+### 1. Repository Structure
+
+**Recommended Structure:**
+```
+aws-project/
+├── .github/
+│   └── workflows/
+│       ├── deploy-dev.yml
+│       ├── deploy-prod.yml
+│       └── tests.yml
+├── infrastructure/
+│   ├── templates/
+│   │   ├── main.yaml
+│   │   └── parameters/
+│   └── scripts/
+├── src/
+│   ├── lambda-functions/
+│   │   ├── user-api/
+│   │   └── data-processor/
+│   └── web-assets/
+├── tests/
+│   ├── unit/
+│   └── integration/
+├── docs/
+│   └── deployment.md
+├── .gitignore
+├── README.md
+└── package.json
+```
+
+### 2. Branching Strategy
+
+**Git Flow for AWS Projects:**
+```
+main (production)
+├── develop (integration)
+│   ├── feature/user-authentication
+│   ├── feature/s3-integration
+│   └── hotfix/lambda-timeout-fix
+└── release/v1.2.0
+```
+
+**Branch Naming Conventions:**
+- `feature/description` - New features
+- `bugfix/description` - Bug fixes
+- `hotfix/description` - Critical production fixes
+- `release/version` - Release preparation
+- `infrastructure/description` - Infrastructure changes
+
+## GitHub Features for AWS Development
+
+### 1. Issues and Project Management
+
+**Create Issues:**
+```markdown
+## Feature Request: S3 Bucket Encryption
+
+**Description:**
+Add default encryption to all S3 buckets in our CloudFormation templates.
+
+**Acceptance Criteria:**
+- [ ] Update CloudFormation template
+- [ ] Add KMS key configuration
+- [ ] Update documentation
+- [ ] Add tests for encryption verification
+
+**Labels:** enhancement, security, s3
+```
+
+**Issue Templates:**
+Create `.github/ISSUE_TEMPLATE/bug_report.md`:
+```markdown
+---
+name: Bug report
+about: Create a report to help us improve
+title: '[BUG] '
+labels: bug
+assignees: ''
+---
+
+**Describe the bug**
+A clear and concise description of what the bug is.
+
+**AWS Service Affected**
+Which AWS service is having issues?
+
+**CloudFormation Template**
+```yaml
+# Include relevant template section
+```
+
+**Expected behavior**
+What should happen?
+
+**Screenshots**
+If applicable, add screenshots.
+```
+
+### 2. Pull Request Workflow
+
+**Create Pull Request:**
+```bash
+# Create feature branch
+git checkout -b feature/add-dynamodb-table
+
+# Make changes and commit
+git add .
+git commit -m "Add DynamoDB table with encryption"
+
+# Push branch
+git push origin feature/add-dynamodb-table
+
+# Create PR on GitHub web interface
+```
+
+**PR Template** (`.github/pull_request_template.md`):
+```markdown
+## Description
+Brief description of changes
+
+## Type of Change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Infrastructure change
+- [ ] Documentation update
+
+## AWS Resources Changed
+- [ ] Lambda functions
+- [ ] S3 buckets
+- [ ] DynamoDB tables
+- [ ] IAM roles/policies
+
+## Testing
+- [ ] Unit tests pass
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+- [ ] CloudFormation validates
+
+## Deployment Checklist
+- [ ] Reviewed for security implications
+- [ ] Cost impact assessed
+- [ ] Backup plan documented
+```
+
+### 3. Code Review Best Practices
+
+**Review Checklist:**
+```markdown
+## Security Review
+- [ ] No hardcoded credentials
+- [ ] Proper IAM permissions (least privilege)
+- [ ] Encryption enabled where appropriate
+- [ ] Network security groups configured
+
+## Architecture Review
+- [ ] Follows AWS Well-Architected principles
+- [ ] Resource naming conventions followed
+- [ ] Tags applied consistently
+- [ ] Documentation updated
+
+## Code Quality
+- [ ] Code is readable and well-commented
+- [ ] Error handling implemented
+- [ ] Logging and monitoring included
+- [ ] Tests cover new functionality
+```
+
+## GitHub Actions for AWS
+
+### 1. Basic Deployment Workflow
+
+Create `.github/workflows/deploy.yml`:
+```yaml
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        pip install boto3 pytest
+        
+    - name: Run tests
+      run: pytest tests/
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Deploy CloudFormation
+      run: |
+        aws cloudformation deploy \
+          --template-file infrastructure/main.yaml \
+          --stack-name my-app-stack \
+          --capabilities CAPABILITY_IAM \
+          --parameter-overrides Environment=production
+```
+
+### 2. Multi-Environment Deployment
+
+**Development Environment:**
+```yaml
+name: Deploy to Development
+
+on:
+  push:
+    branches: [ develop ]
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    environment: development
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.DEV_AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.DEV_AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+        role-to-assume: ${{ secrets.DEV_AWS_ROLE_ARN }}
+    
+    - name: Deploy to Dev
+      run: |
+        aws cloudformation deploy \
+          --template-file infrastructure/main.yaml \
+          --stack-name my-app-dev-stack \
+          --capabilities CAPABILITY_IAM \
+          --parameter-overrides Environment=development
+```
+
+### 3. Security Scanning
+
+```yaml
+name: Security Scan
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Run Checkov (CloudFormation Security)
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: infrastructure/
+        framework: cloudformation
+    
+    - name: Run git-secrets
+      run: |
+        git clone https://github.com/awslabs/git-secrets.git
+        cd git-secrets && make install
+        git secrets --register-aws --global
+        git secrets --scan
+```
+
+## Collaboration Best Practices
+
+### 1. Commit Message Conventions
+
+**Format:**
+```
+type(scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+**Examples:**
+```bash
+feat(lambda): add user authentication function
+
+Add JWT token validation for API Gateway requests.
+Includes error handling and logging.
+
+Closes #123
+
+fix(s3): resolve bucket policy permissions error
+
+Update bucket policy to allow CloudFront access.
+Tested with staging environment.
+
+docs(readme): update deployment instructions
+
+Add steps for GitHub Actions setup and AWS credentials configuration.
+```
+
+### 2. Git Hooks
+
+**Pre-commit Hook** (`.git/hooks/pre-commit`):
+```bash
+#!/bin/bash
+
+# Check for AWS credentials in code
+if git diff --cached --name-only | xargs grep -l "aws_access_key_id\|aws_secret_access_key" 2>/dev/null; then
+    echo "Error: AWS credentials found in staged files!"
+    exit 1
+fi
+
+# Validate CloudFormation templates
+for file in $(git diff --cached --name-only | grep -E '\.(yaml|yml)$'); do
+    aws cloudformation validate-template --template-body file://$file
+    if [ $? -ne 0 ]; then
+        echo "Error: CloudFormation template validation failed for $file"
+        exit 1
+    fi
+done
+```
+
+### 3. Repository Settings
+
+**Branch Protection Rules:**
+- Require pull request reviews
+- Require status checks to pass
+- Require branches to be up to date
+- Include administrators
+- Restrict pushes to matching branches
+
+**Required Status Checks:**
+- CI/CD pipeline success
+- Security scan passing
+- Code review approval
+- CloudFormation validation
+
+## GitHub Security for AWS
+
+### 1. Secrets Management
+
+**Repository Secrets:**
+```
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+DEV_AWS_ROLE_ARN
+PROD_AWS_ROLE_ARN
+```
+
+**Environment-Specific Secrets:**
+- Development environment secrets
+- Staging environment secrets  
+- Production environment secrets
+
+### 2. OIDC Integration (Recommended)
+
+**Configure OIDC Provider:**
+```yaml
+- name: Configure AWS credentials
+  uses: aws-actions/configure-aws-credentials@v2
+  with:
+    role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
+    role-session-name: GitHubActions
+    aws-region: us-east-1
+```
+
+**IAM Role Trust Policy:**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+          "token.actions.githubusercontent.com:sub": "repo:username/repository:ref:refs/heads/main"
+        }
+      }
+    }
+  ]
+}
+```
+
+## Advanced Git Techniques
+
+### 1. Interactive Rebase
+
+```bash
+# Clean up commit history before PR
+git rebase -i HEAD~3
+
+# Squash commits
+pick abc1234 Add DynamoDB table
+squash def5678 Fix table configuration
+squash ghi9012 Update documentation
+```
+
+### 2. Git Stash
+
+```bash
+# Save work in progress
+git stash push -m "WIP: Lambda function updates"
+
+# List stashes
+git stash list
+
+# Apply stash
+git stash pop
+```
+
+### 3. Git Bisect
+
+```bash
+# Find bug introduction point
+git bisect start
+git bisect bad HEAD
+git bisect good v1.0.0
+
+# Git will checkout commits for testing
+# Mark each as good or bad until bug is found
+```
+
+## Troubleshooting Common Issues
+
+### 1. Merge Conflicts
+
+```bash
+# When merge conflict occurs
+git status  # See conflicted files
+
+# Edit files to resolve conflicts
+# Look for conflict markers: <<<<<<<, =======, >>>>>>>
+
+# Mark as resolved
+git add resolved-file.txt
+git commit -m "Resolve merge conflict in CloudFormation template"
+```
+
+### 2. Accidentally Committed Secrets
+
+```bash
+# Remove from history (use with caution)
+git filter-branch --force --index-filter \
+'git rm --cached --ignore-unmatch secrets.txt' \
+--prune-empty --tag-name-filter cat -- --all
+
+# Force push (coordinate with team)
+git push origin --force --all
+```
+
+### 3. Large File Issues
+
+```bash
+# Remove large files from history
+git filter-branch --tree-filter 'rm -f large-file.zip' HEAD
+
+# Use Git LFS for large files
+git lfs track "*.zip"
+git add .gitattributes
+```
+
+## Next Steps
+
+With GitHub fundamentals mastered:
+
+1. **Learn AWS basics** - [AWS Basics](./aws-basics) for cloud concepts
+2. **Set up your environment** - [Environment Setup](./environment-setup) for development tools
+3. **Configure your IDE** - [VS Code Setup](./vscode-setup) for optimal development
+4. **Apply architecture principles** - [Architecture Overview](./architecture-overview)
+5. **Start building** - Choose a service from Components section
+
+## Additional Resources
+
+- [GitHub Documentation](https://docs.github.com/)
+- [Git Pro Book](https://git-scm.com/book) - Comprehensive Git guide
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [AWS GitHub Actions](https://github.com/aws-actions) - Official AWS actions
+- [GitFlow Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow)
+
+You're now equipped with professional GitHub skills for AWS development workflows!

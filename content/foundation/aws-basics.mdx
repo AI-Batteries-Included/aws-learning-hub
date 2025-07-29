@@ -1,10 +1,392 @@
 # AWS Basics
 
-*Placeholder for AWS basics content*
+Master the fundamental concepts and core services that form the foundation of Amazon Web Services. This comprehensive guide covers everything you need to know to get started with AWS.
 
-Coming soon: Fundamental AWS concepts and core services overview.
+## What is AWS?
 
-## Topics to Cover
-- AWS account setup
-- Core services introduction
-- Basic architectural patterns
+Amazon Web Services (AWS) is a comprehensive cloud computing platform that provides on-demand access to computing resources, storage, databases, networking, and more. AWS operates on a pay-as-you-use model, allowing you to scale resources up or down based on your needs.
+
+### Key Benefits
+
+- **Cost-Effective**: Pay only for what you use
+- **Scalable**: Instantly scale resources up or down
+- **Reliable**: 99.99% uptime SLA for many services
+- **Secure**: Enterprise-grade security and compliance
+- **Global**: Data centers in regions worldwide
+- **Innovative**: Cutting-edge services and features
+
+## AWS Global Infrastructure
+
+Understanding AWS's global infrastructure is crucial for designing resilient applications.
+
+### Regions
+AWS operates in multiple geographic regions worldwide. Each region contains multiple data centers and is completely independent.
+
+**Popular Regions:**
+- `us-east-1` (N. Virginia) - Default region, often cheapest
+- `us-west-2` (Oregon) - Popular for West Coast applications
+- `eu-west-1` (Ireland) - Primary European region
+- `ap-southeast-1` (Singapore) - Popular for Asia-Pacific
+
+### Availability Zones (AZs)
+Each region contains multiple isolated data centers called Availability Zones.
+
+```
+Region: us-east-1
+├── us-east-1a (AZ)
+├── us-east-1b (AZ) 
+├── us-east-1c (AZ)
+└── us-east-1d (AZ)
+```
+
+**Best Practice:** Always deploy across multiple AZs for high availability.
+
+### Edge Locations
+AWS maintains 400+ edge locations worldwide for content delivery through CloudFront CDN.
+
+## Core AWS Services
+
+### Compute Services
+
+#### Amazon EC2 (Elastic Compute Cloud)
+Virtual servers in the cloud.
+
+```bash
+# Launch an EC2 instance
+aws ec2 run-instances \
+  --image-id ami-0abcdef1234567890 \
+  --count 1 \
+  --instance-type t3.micro \
+  --key-name my-key-pair
+```
+
+**Use Cases:**
+- Web servers
+- Application servers
+- Development environments
+- High-performance computing
+
+#### AWS Lambda
+Serverless compute service that runs code without managing servers.
+
+```python
+import json
+
+def lambda_handler(event, context):
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
+```
+
+**Use Cases:**
+- API backends
+- Event processing
+- Scheduled tasks
+- Microservices
+
+### Storage Services
+
+#### Amazon S3 (Simple Storage Service)
+Object storage with virtually unlimited capacity.
+
+```bash
+# Create a bucket
+aws s3 mb s3://my-unique-bucket-name
+
+# Upload a file
+aws s3 cp file.txt s3://my-unique-bucket-name/
+
+# List objects
+aws s3 ls s3://my-unique-bucket-name/
+```
+
+**Storage Classes:**
+- **Standard** - Frequently accessed data
+- **Intelligent-Tiering** - Automatic cost optimization
+- **Standard-IA** - Infrequently accessed data
+- **Glacier** - Long-term archival
+- **Deep Archive** - Lowest cost archival
+
+#### Amazon EBS (Elastic Block Store)
+High-performance block storage for EC2 instances.
+
+**Volume Types:**
+- **gp3** - General purpose SSD (latest generation)
+- **io2** - High IOPS SSD for critical workloads
+- **st1** - Throughput optimized HDD
+- **sc1** - Cold HDD for infrequent access
+
+### Database Services
+
+#### Amazon RDS (Relational Database Service)
+Managed relational databases.
+
+**Supported Engines:**
+- MySQL
+- PostgreSQL
+- MariaDB
+- Oracle
+- SQL Server
+- Amazon Aurora
+
+```bash
+# Create RDS instance
+aws rds create-db-instance \
+  --db-instance-identifier mydb \
+  --db-instance-class db.t3.micro \
+  --engine mysql \
+  --master-username admin \
+  --master-user-password mypassword \
+  --allocated-storage 20
+```
+
+#### Amazon DynamoDB
+Fully managed NoSQL database.
+
+```python
+import boto3
+
+dynamodb = boto3.resource('dynamodb')
+
+# Create table
+table = dynamodb.create_table(
+    TableName='Users',
+    KeySchema=[
+        {
+            'AttributeName': 'user_id',
+            'KeyType': 'HASH'
+        }
+    ],
+    AttributeDefinitions=[
+        {
+            'AttributeName': 'user_id',
+            'AttributeType': 'S'
+        }
+    ],
+    BillingMode='PAY_PER_REQUEST'
+)
+```
+
+### Networking Services
+
+#### Amazon VPC (Virtual Private Cloud)
+Isolated network environment in AWS.
+
+```yaml
+# CloudFormation VPC template
+Resources:
+  MyVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+```
+
+**Components:**
+- **Subnets** - Network segments within VPC
+- **Route Tables** - Define traffic routing
+- **Security Groups** - Virtual firewalls for instances
+- **NACLs** - Network-level access control
+- **Internet Gateway** - Internet access for public subnets
+- **NAT Gateway** - Outbound internet for private subnets
+
+## AWS Pricing Model
+
+### Pay-As-You-Use
+You pay only for the resources you consume, with no upfront costs or long-term commitments.
+
+### Pricing Factors
+
+1. **Compute Time** - Pay for running instances by the hour/second
+2. **Storage** - Pay for storage used and requests made
+3. **Data Transfer** - Pay for data transferred out of AWS
+4. **Requests** - API calls, function invocations, etc.
+
+### Cost Optimization Strategies
+
+```bash
+# Use AWS Cost Calculator
+# https://calculator.aws/
+
+# Monitor costs with AWS Cost Explorer
+aws ce get-cost-and-usage \
+  --time-period Start=2024-01-01,End=2024-01-31 \
+  --granularity MONTHLY \
+  --metrics BlendedCost
+```
+
+**Best Practices:**
+- Use Reserved Instances for predictable workloads
+- Implement auto-scaling to match demand
+- Use Spot Instances for fault-tolerant workloads
+- Set up billing alerts and budgets
+- Regularly review and optimize resource usage
+
+## Security Fundamentals
+
+### Shared Responsibility Model
+
+```
+┌─────────────────────────────────────────┐
+│           Customer Responsibility        │ ← Your Data, OS, Apps
+├─────────────────────────────────────────┤
+│           AWS Responsibility            │ ← Hardware, Network, Facilities
+└─────────────────────────────────────────┘
+```
+
+**AWS Handles:**
+- Physical security of data centers
+- Infrastructure maintenance
+- Network controls
+- Host operating system patching
+
+**You Handle:**
+- Operating system updates (EC2)
+- Application security
+- Data encryption
+- Network traffic protection
+- IAM configuration
+
+### Identity and Access Management (IAM)
+
+#### Core Concepts
+
+**Users** - Individual AWS account identities
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    }
+  ]
+}
+```
+
+**Groups** - Collections of users with similar permissions
+**Roles** - Temporary credentials for AWS services
+**Policies** - JSON documents defining permissions
+
+#### Best Practices
+
+- **Principle of Least Privilege** - Grant minimum required permissions
+- **Use MFA** - Enable multi-factor authentication
+- **Rotate Credentials** - Regularly update access keys
+- **Avoid Root User** - Create IAM users for daily tasks
+- **Use Roles for Applications** - Don't embed credentials in code
+
+## Getting Started Checklist
+
+### 1. Create AWS Account
+- Sign up at [aws.amazon.com](https://aws.amazon.com)
+- Provide payment method
+- Verify identity
+
+### 2. Secure Root Account
+```bash
+# Enable MFA on root account
+# Create IAM user for daily use
+aws iam create-user --user-name my-admin-user
+
+# Attach admin policy
+aws iam attach-user-policy \
+  --user-name my-admin-user \
+  --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+### 3. Set Up Billing Alerts
+- Navigate to CloudWatch
+- Create billing alarms
+- Set spending thresholds
+
+### 4. Choose a Region
+Consider these factors:
+- **Latency** - Choose region closest to users
+- **Compliance** - Data sovereignty requirements
+- **Cost** - Pricing varies by region
+- **Services** - Not all services available in all regions
+
+### 5. Launch Your First Resources
+
+**Hello World Lambda Function:**
+```python
+import json
+
+def lambda_handler(event, context):
+    return {
+        'statusCode': 200,
+        'body': json.dumps({
+            'message': 'Hello from AWS!',
+            'region': context.invoked_function_arn.split(':')[3]
+        })
+    }
+```
+
+**Simple S3 Website:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My AWS Website</title>
+</head>
+<body>
+    <h1>Hello from S3!</h1>
+    <p>This static website is hosted on Amazon S3.</p>
+</body>
+</html>
+```
+
+## Common Use Cases
+
+### 1. Static Website Hosting
+- Host on S3
+- Use CloudFront for global distribution
+- Custom domain with Route 53
+
+### 2. Web Application
+- Frontend: S3 + CloudFront
+- Backend: API Gateway + Lambda
+- Database: DynamoDB or RDS
+- Authentication: Cognito
+
+### 3. Data Processing Pipeline
+- Ingest: Kinesis or S3
+- Process: Lambda or EMR
+- Store: S3 or Redshift
+- Visualize: QuickSight
+
+### 4. Backup and Disaster Recovery
+- Backup to S3
+- Cross-region replication
+- Automated recovery with Lambda
+
+## Next Steps
+
+Now that you understand AWS basics:
+
+1. **Set up your environment** - [Environment Setup](./environment-setup)
+2. **Learn architectural patterns** - [Architecture Overview](./architecture-overview)
+3. **Configure development tools** - [VS Code Setup](./vscode-setup)
+4. **Master version control** - [GitHub Fundamentals](./github-fundamentals)
+5. **Start with a service** - Choose from the Components section
+
+## Additional Resources
+
+- [AWS Free Tier](https://aws.amazon.com/free/) - Try AWS services at no charge
+- [AWS Documentation](https://docs.aws.amazon.com/) - Comprehensive service documentation
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/) - Best practices
+- [AWS Architecture Center](https://aws.amazon.com/architecture/) - Reference architectures
+- [AWS Training](https://aws.amazon.com/training/) - Official training resources
+
+Remember: AWS is vast, but you don't need to learn everything at once. Start with the basics, build projects, and gradually expand your knowledge as needed.

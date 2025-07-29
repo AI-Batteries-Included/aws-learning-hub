@@ -16,9 +16,29 @@ export default function MainNav() {
       title: 'Foundation',
       items: [
         {
+          title: 'AWS Basics',
+          href: '/learn/aws-basics',
+          description: 'Master fundamental AWS concepts and core services'
+        },
+        {
           title: 'Environment Setup',
           href: '/learn/environment-setup',
           description: 'Set up your development environment'
+        },
+        {
+          title: 'VS Code Setup',
+          href: '/learn/vscode-setup',
+          description: 'Configure VS Code for AWS development'
+        },
+        {
+          title: 'GitHub Fundamentals',
+          href: '/learn/github-fundamentals',
+          description: 'Master version control and collaboration workflows'
+        },
+        {
+          title: 'Claude Code Setup',
+          href: '/learn/claude-code-setup',
+          description: 'AI-powered development assistance'
         },
         {
           title: 'Architecture Overview',
