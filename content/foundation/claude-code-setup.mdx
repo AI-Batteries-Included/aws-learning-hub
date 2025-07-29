@@ -1,10 +1,576 @@
 # Claude Code Setup
 
-*Placeholder for Claude Code setup content*
+Set up and optimize Claude Code for accelerated AWS development. This guide covers installation, configuration, and best practices for using AI-powered assistance in your AWS projects.
 
-Coming soon: Set up and optimize Claude Code for AWS development.
+## What is Claude Code?
 
-## Topics to Cover
-- Installation and configuration
-- Best practices
-- Integration with AWS workflows
+Claude Code is Anthropic's official CLI and development companion that provides AI-powered assistance for software engineering tasks. It's particularly powerful for AWS development due to its:
+
+- **AWS Expertise** - Deep knowledge of AWS services and best practices
+- **Infrastructure as Code** - CloudFormation and CDK support
+- **Code Generation** - Generate boilerplate and complex implementations
+- **Debugging Support** - Analyze and fix AWS-related issues
+- **Documentation** - Automatic documentation generation
+- **Learning Assistant** - Explains concepts and provides guidance
+
+## Installation
+
+### Prerequisites
+
+Before installing Claude Code, ensure you have:
+- Terminal/Command Prompt access
+- Internet connection for API access
+- Valid Anthropic API key or Claude Pro subscription
+
+### Installation Methods
+
+**Option 1: Direct Download (Recommended)**
+```bash
+# Download the latest release
+curl -L https://github.com/anthropics/claude-code/releases/latest/download/claude-code-$(uname -s)-$(uname -m).tar.gz | tar -xz
+
+# Move to PATH
+sudo mv claude-code /usr/local/bin/
+
+# Verify installation
+claude-code --version
+```
+
+**Option 2: Package Manager**
+```bash
+# macOS (Homebrew)
+brew install anthropic/tap/claude-code
+
+# Windows (Chocolatey)
+choco install claude-code
+
+# Linux (Snap)
+sudo snap install claude-code
+```
+
+**Option 3: NPM (Cross-platform)**
+```bash
+npm install -g @anthropic/claude-code
+```
+
+### Authentication Setup
+
+**Method 1: API Key (Recommended for CI/CD)**
+```bash
+# Set environment variable
+export ANTHROPIC_API_KEY="your-api-key-here"
+
+# Or create config file
+claude-code auth login --api-key your-api-key-here
+```
+
+**Method 2: OAuth (Interactive)**
+```bash
+# Interactive login
+claude-code auth login
+
+# Follow browser prompts to authenticate
+```
+
+**Method 3: Configuration File**
+```bash
+# Create config directory
+mkdir -p ~/.config/claude-code
+
+# Create config file
+cat > ~/.config/claude-code/config.yaml << EOF
+api_key: "your-api-key-here"
+model: "claude-3-sonnet-20240229"
+max_tokens: 4096
+temperature: 0.1
+EOF
+```
+
+## Initial Configuration
+
+### AWS Integration Setup
+
+**Configure AWS Context:**
+```bash
+# Set AWS profile to use
+claude-code config set aws.profile default
+
+# Set preferred AWS region
+claude-code config set aws.region us-east-1
+
+# Enable AWS service detection
+claude-code config set aws.auto_detect true
+```
+
+**Project-Specific Configuration:**
+```bash
+# Initialize Claude Code in AWS project
+cd your-aws-project
+claude-code init
+
+# This creates .claude/config.yaml with project settings
+```
+
+**Sample Project Configuration (`.claude/config.yaml`):**
+```yaml
+project:
+  type: aws
+  services:
+    - lambda
+    - s3
+    - dynamodb
+    - apigateway
+  
+aws:
+  region: us-east-1
+  profile: default
+  
+preferences:
+  code_style: python
+  framework: sam
+  infrastructure: cloudformation
+  
+templates:
+  lambda_runtime: python3.9
+  naming_convention: kebab-case
+```
+
+## Core Features for AWS Development
+
+### 1. Code Generation
+
+**Generate Lambda Function:**
+```bash
+# Interactive generation
+claude-code generate lambda --name user-api --runtime python3.9
+
+# With parameters
+claude-code generate lambda \
+  --name user-api \
+  --runtime python3.9 \
+  --trigger api-gateway \
+  --database dynamodb
+```
+
+**Generate CloudFormation Template:**
+```bash
+# Basic template
+claude-code generate cloudformation --service s3 --name static-website
+
+# Complex multi-service template
+claude-code generate cloudformation \
+  --services lambda,apigateway,dynamodb \
+  --name serverless-api \
+  --include-outputs
+```
+
+### 2. Code Analysis and Review
+
+**Analyze AWS Code:**
+```bash
+# Analyze specific file
+claude-code analyze template.yaml
+
+# Analyze entire project
+claude-code analyze . --recursive
+
+# Security analysis
+claude-code analyze . --focus security --format detailed
+```
+
+**Code Review:**
+```bash
+# Review changes before commit
+git diff | claude-code review
+
+# Review specific file
+claude-code review src/lambda_function.py
+
+# Review with AWS-specific checks
+claude-code review . --aws-best-practices
+```
+
+### 3. Interactive Chat Mode
+
+**Start Interactive Session:**
+```bash
+# General chat
+claude-code chat
+
+# AWS-focused session
+claude-code chat --context aws
+
+# Project-aware session (run in project directory)
+claude-code chat --project
+```
+
+**Example Chat Session:**
+```
+You: How do I create an S3 bucket with encryption in CloudFormation?
+
+Claude: I'll help you create an S3 bucket with encryption. Here's a CloudFormation template:
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'S3 bucket with server-side encryption'
+
+Resources:
+  MyEncryptedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-encrypted-bucket'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  BucketName:
+    Description: 'Name of the encrypted S3 bucket'
+    Value: !Ref MyEncryptedBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+```
+
+This template creates an S3 bucket with:
+- AES-256 server-side encryption
+- Public access blocked for security
+- Parameterized naming for reusability
+```
+
+### 4. Documentation Generation
+
+**Generate README:**
+```bash
+# Auto-generate project README
+claude-code docs generate readme
+
+# Generate API documentation
+claude-code docs generate api --format markdown
+
+# Generate CloudFormation documentation
+claude-code docs generate cloudformation template.yaml
+```
+
+**Generate Architecture Diagrams:**
+```bash
+# Create architecture diagram from CloudFormation
+claude-code docs diagram template.yaml --output architecture.md
+
+# Generate service interaction diagram
+claude-code docs diagram . --type interactions --format mermaid
+```
+
+## Advanced Workflows
+
+### 1. AWS-Specific Commands
+
+**CloudFormation Operations:**
+```bash
+# Validate template with AI assistance
+claude-code cloudformation validate template.yaml
+
+# Explain CloudFormation resources
+claude-code cloudformation explain template.yaml
+
+# Generate parameters file
+claude-code cloudformation params template.yaml --env production
+```
+
+**Lambda Development:**
+```bash
+# Create Lambda function with tests
+claude-code lambda create user-api --include-tests
+
+# Optimize Lambda function
+claude-code lambda optimize src/handler.py
+
+# Generate deployment package
+claude-code lambda package . --output deployment.zip
+```
+
+### 2. Integration with Git
+
+**Pre-commit Integration:**
+```bash
+# Install pre-commit hook
+claude-code git install-hooks
+
+# This adds .git/hooks/pre-commit that runs:
+# - Code analysis
+# - Security checks  
+# - Documentation updates
+```
+
+**Commit Message Generation:**
+```bash
+# Generate commit message from staged changes
+git add .
+claude-code git commit-message
+
+# Commit with AI-generated message
+git add . && claude-code git commit
+```
+
+### 3. CI/CD Integration
+
+**GitHub Actions Integration:**
+```yaml
+# .github/workflows/claude-review.yml
+name: Claude Code Review
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  claude-review:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Claude Code
+      run: |
+        curl -L https://github.com/anthropics/claude-code/releases/latest/download/claude-code-Linux-x86_64.tar.gz | tar -xz
+        sudo mv claude-code /usr/local/bin/
+    
+    - name: Run Claude Code Analysis
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: |
+        claude-code analyze . --format github-actions --aws-focus
+        
+    - name: Generate Review Comment
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        claude-code review . --post-comment --pr-number ${{ github.event.number }}
+```
+
+## Best Practices
+
+### 1. Project Organization
+
+**Recommended Structure:**
+```
+aws-project/
+├── .claude/
+│   ├── config.yaml
+│   ├── templates/
+│   └── prompts/
+├── infrastructure/
+│   ├── templates/
+│   └── parameters/
+├── src/
+│   └── lambda-functions/
+├── tests/
+├── docs/
+│   └── claude-generated/
+└── .gitignore
+```
+
+**Claude-Specific .gitignore:**
+```gitignore
+# Claude Code
+.claude/cache/
+.claude/temp/
+.claude/logs/
+
+# Generated documentation
+docs/claude-generated/
+
+# API keys (never commit)
+.env
+*.key
+anthropic-api-key.txt
+```
+
+### 2. Effective Prompting
+
+**Specific AWS Requests:**
+```bash
+# Good: Specific and contextual
+claude-code chat "Create a DynamoDB table with GSI for user lookups by email, include CloudFormation template with proper IAM permissions"
+
+# Better: Include constraints
+claude-code chat "Create a cost-optimized DynamoDB table for a user management system with <10K users, needs email lookups, must follow least-privilege IAM"
+```
+
+**Code Review Requests:**
+```bash
+# Focus on specific aspects
+claude-code review . --focus "security,performance,cost-optimization"
+
+# Include context
+claude-code review lambda_function.py --context "This is a user authentication function that processes JWT tokens"
+```
+
+### 3. Security Considerations
+
+**Secure API Key Management:**
+```bash
+# Use environment variables
+export ANTHROPIC_API_KEY="$(cat ~/.anthropic/api-key)"
+
+# Or use AWS Systems Manager Parameter Store
+aws ssm get-parameter --name "/claude-code/api-key" --with-decryption --query "Parameter.Value" --output text
+```
+
+**Audit AI Suggestions:**
+```bash
+# Always review generated IAM policies
+claude-code generate iam-policy --service s3 --actions read-write | jq .
+
+# Validate CloudFormation before deployment
+claude-code cloudformation validate template.yaml --strict
+aws cloudformation validate-template --template-body file://template.yaml
+```
+
+### 4. Performance Optimization
+
+**Configure Response Caching:**
+```yaml
+# .claude/config.yaml
+cache:
+  enabled: true
+  ttl: 3600  # 1 hour
+  directory: ~/.claude/cache
+
+performance:
+  max_tokens: 2048  # Reduce for faster responses
+  temperature: 0.1  # Lower for more deterministic output
+```
+
+**Batch Operations:**
+```bash
+# Analyze multiple files together (more efficient)
+claude-code analyze src/*.py infrastructure/*.yaml
+
+# Rather than individual file analysis
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**Authentication Problems:**
+```bash
+# Check authentication status
+claude-code auth status
+
+# Re-authenticate
+claude-code auth logout
+claude-code auth login
+
+# Test API connection
+claude-code test connection
+```
+
+**AWS Integration Issues:**
+```bash
+# Verify AWS credentials
+aws sts get-caller-identity
+
+# Check Claude Code AWS configuration
+claude-code config list | grep aws
+
+# Reset AWS integration
+claude-code config reset aws
+```
+
+**Performance Issues:**
+```bash
+# Clear cache
+claude-code cache clear
+
+# Check cache status
+claude-code cache status
+
+# Reduce response size
+claude-code config set max_tokens 1024
+```
+
+## Tips and Tricks
+
+### 1. Context Awareness
+
+**Project Context:**
+```bash
+# Run commands from project root for better context
+cd /path/to/aws-project
+claude-code chat "How can I optimize this Lambda function?"
+```
+
+**File-Specific Context:**
+```bash
+# Reference specific files in prompts
+claude-code chat "Review the IAM policy in infrastructure/iam-policy.json for least privilege compliance"
+```
+
+### 2. Custom Templates
+
+**Create Reusable Templates:**
+```bash
+# Save frequently used patterns
+mkdir -p .claude/templates
+
+# Create Lambda template
+cat > .claude/templates/lambda-api.yaml << EOF
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  FunctionName:
+    Type: String
+  Environment:
+    Type: String
+    Default: dev
+
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub '\${FunctionName}-\${Environment}'
+      # ... rest of template
+EOF
+
+# Use template
+claude-code generate --template lambda-api --params "FunctionName=UserAPI"
+```
+
+### 3. Collaboration
+
+**Share Configurations:**
+```bash
+# Include .claude/config.yaml in version control (without API keys)
+git add .claude/config.yaml
+
+# Use environment-specific configs
+claude-code config create --env production
+claude-code config create --env development
+```
+
+## Next Steps
+
+With Claude Code configured for AWS development:
+
+1. **Master AWS fundamentals** - [AWS Basics](./aws-basics) for core concepts
+2. **Set up your complete environment** - [Environment Setup](./environment-setup) for all tools
+3. **Configure your IDE** - [VS Code Setup](./vscode-setup) for integrated development
+4. **Learn version control** - [GitHub Fundamentals](./github-fundamentals) for collaboration
+5. **Apply architectural principles** - [Architecture Overview](./architecture-overview)
+
+## Additional Resources
+
+- [Claude Code Documentation](https://docs.anthropic.com/en/docs/claude-code)
+- [Anthropic API Reference](https://docs.anthropic.com/en/api/getting-started)
+- [AWS CLI Integration Guide](https://docs.aws.amazon.com/cli/latest/userguide/)
+- [CloudFormation Best Practices](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/best-practices.html)
+
+You're now equipped with AI-powered development assistance for your AWS projects!
