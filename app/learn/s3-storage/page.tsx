@@ -1,5 +1,5 @@
 import ComponentPageTemplate from '../../../components/ComponentPageTemplate';
-import S3StorageContent from '../../../content/components/s3.mdx';
+import S3StorageContent from '../../../content/components/s3-optimized.mdx';
 
 export const metadata = {
   title: 'Amazon S3 Storage - AWS Learning Hub',

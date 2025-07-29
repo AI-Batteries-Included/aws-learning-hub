@@ -1,50 +1,51 @@
+import ComponentPageTemplate from '../../../components/ComponentPageTemplate';
+import Route53Content from '../../../content/components/route53.mdx';
+
 export const metadata = {
-  title: 'Route 53 - AWS Learning Hub',
-  description: 'Learn DNS management and domain routing with Amazon Route 53'
+  title: 'Amazon Route 53 DNS - AWS Learning Hub',
+  description: 'Configure DNS management and intelligent routing with Amazon\'s highly available domain name system. Learn how to register domains, manage DNS records, and implement advanced routing policies.'
 };
 
 export default function Route53() {
   return (
-    <div className="container">
-      <section className="hero-section">
-        <h1 className="hero-title">Amazon Route 53</h1>
-        <p className="hero-subtitle">
-          Configure DNS management and intelligent routing with Amazon&apos;s highly available domain name system.
-        </p>
-      </section>
-
-      <section className="content-section">
-        <h2 className="section-title">DNS Fundamentals</h2>
-        <div className="component-grid">
-          <div className="component-item">
-            <h3>Hosted Zones</h3>
-            <p>Container for DNS records for a domain</p>
-          </div>
-          <div className="component-item">
-            <h3>Record Types</h3>
-            <p>A, AAAA, CNAME, MX, and other DNS records</p>
-          </div>
-          <div className="component-item">
-            <h3>Health Checks</h3>
-            <p>Monitor endpoint health for failover</p>
-          </div>
-          <div className="component-item">
-            <h3>Routing Policies</h3>
-            <p>Simple, weighted, latency-based routing</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="content-section">
-        <h2 className="section-title">Advanced Features</h2>
-        <ul className="feature-list">
-          <li className="feature-item">Domain registration</li>
-          <li className="feature-item">Traffic flow visual editor</li>
-          <li className="feature-item">DNS failover</li>
-          <li className="feature-item">Geolocation routing</li>
-          <li className="feature-item">Private DNS for VPCs</li>
-        </ul>
-      </section>
-    </div>
+    <ComponentPageTemplate
+      title="Amazon Route 53 DNS"
+      subtitle="Configure DNS management and intelligent routing with Amazon's highly available domain name system. Learn how to register domains, manage DNS records, and implement advanced routing policies."
+      difficulty="intermediate"
+      estimatedTime="55 minutes"
+      category="Networking"
+      awsServices={['Route 53', 'CloudFront', 'Application Load Balancer', 'S3', 'CloudWatch']}
+      prerequisites={[
+        {
+          title: 'AWS Basics',
+          href: '/learn/aws-basics',
+          completed: false
+        },
+        {
+          title: 'CloudFront CDN',
+          href: '/learn/cloudfront',
+          completed: false
+        }
+      ]}
+      nextSteps={[
+        {
+          title: 'Certificate Manager',
+          href: '/learn/certificate-manager',
+          description: 'Secure your domains with SSL/TLS certificates'
+        },
+        {
+          title: 'Application Load Balancer',
+          href: '/learn/application-load-balancer',
+          description: 'Route traffic to multiple targets with health checks'
+        },
+        {
+          title: 'CloudFormation',
+          href: '/learn/cloudformation',
+          description: 'Deploy DNS infrastructure as code'
+        }
+      ]}
+    >
+      <Route53Content />
+    </ComponentPageTemplate>
   );
 }
