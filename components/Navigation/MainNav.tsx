@@ -18,32 +18,32 @@ export default function MainNav() {
         {
           title: 'AWS Basics',
           href: '/learn/aws-basics',
-          description: 'Master fundamental AWS concepts and core services'
+          description: 'Core concepts'
         },
         {
           title: 'Environment Setup',
           href: '/learn/environment-setup',
-          description: 'Set up your development environment'
+          description: 'Dev setup'
         },
         {
           title: 'VS Code Setup',
           href: '/learn/vscode-setup',
-          description: 'Configure VS Code for AWS development'
+          description: 'VS Code config'
         },
         {
           title: 'GitHub Fundamentals',
           href: '/learn/github-fundamentals',
-          description: 'Master version control and collaboration workflows'
+          description: 'Version control'
         },
         {
           title: 'Claude Code Setup',
           href: '/learn/claude-code-setup',
-          description: 'AI-powered development assistance'
+          description: 'AI assistance'
         },
         {
           title: 'Architecture Overview',
           href: '/learn/architecture-overview',
-          description: 'Understanding AWS architectural patterns'
+          description: 'Architecture'
         }
       ]
     },
@@ -53,37 +53,37 @@ export default function MainNav() {
         {
           title: 'S3 Storage',
           href: '/learn/s3-storage',
-          description: 'Object storage and file management'
+          description: 'Object storage'
         },
         {
           title: 'Route 53',
           href: '/learn/route-53',
-          description: 'DNS management and domain routing'
+          description: 'DNS routing'
         },
         {
           title: 'CloudFront',
           href: '/learn/cloudfront',
-          description: 'Content delivery network (CDN)'
+          description: 'CDN'
         },
         {
           title: 'Lambda Functions',
           href: '/learn/lambda-functions',
-          description: 'Serverless computing platform'
+          description: 'Serverless'
         },
         {
           title: 'SES Email',
           href: '/learn/ses-email',
-          description: 'Simple Email Service for sending emails'
+          description: 'Email service'
         },
         {
           title: 'IAM Permissions',
           href: '/learn/iam-permissions',
-          description: 'Identity and access management'
+          description: 'Access control'
         },
         {
           title: 'CloudFormation',
           href: '/learn/cloudformation',
-          description: 'Infrastructure as Code templates'
+          description: 'IaC templates'
         }
       ]
     }
@@ -125,6 +125,14 @@ export default function MainNav() {
               </Link>
             </li>
             <li>
+              <Link
+                href="/templates"
+                className={`nav-link ${isActive('/templates') ? 'active' : ''}`}
+              >
+                Templates
+              </Link>
+            </li>
+            <li>
               <DropdownMenu
                 trigger="Learn"
                 sections={learnDropdownSections}
@@ -132,14 +140,6 @@ export default function MainNav() {
                 onToggle={() => setIsLearnDropdownOpen(!isLearnDropdownOpen)}
                 onClose={() => setIsLearnDropdownOpen(false)}
               />
-            </li>
-            <li>
-              <Link
-                href="/templates"
-                className={`nav-link ${isActive('/templates') ? 'active' : ''}`}
-              >
-                Templates
-              </Link>
             </li>
             <li>
               <Link
