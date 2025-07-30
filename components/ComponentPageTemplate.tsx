@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Prerequisite {
   title: string;
@@ -22,6 +23,8 @@ interface ComponentPageTemplateProps {
   nextSteps?: NextStep[];
   category: string;
   awsServices: string[];
+  infographicPath?: string;
+  infographicAlt?: string;
   children: ReactNode;
 }
 
@@ -34,6 +37,8 @@ export default function ComponentPageTemplate({
   nextSteps = [],
   category,
   awsServices,
+  infographicPath,
+  infographicAlt,
   children
 }: ComponentPageTemplateProps) {
   
@@ -68,6 +73,18 @@ export default function ComponentPageTemplate({
             ))}
           </div>
         </div>
+        
+        {/* Infographic Section */}
+        {infographicPath && (
+          <div className="infographic-section">
+            <img
+              src={infographicPath}
+              alt={infographicAlt || `${title} Architecture Diagram`}
+              className="component-infographic"
+              style={{ display: 'block', maxWidth: '100%', height: 'auto' }}
+            />
+          </div>
+        )}
         
         <h1 className="hero-title">{title}</h1>
         <p className="hero-subtitle">{subtitle}</p>

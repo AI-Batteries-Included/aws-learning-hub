@@ -15,6 +15,8 @@ export default function LambdaFunctions() {
       estimatedTime="60 minutes"
       category="Compute"
       awsServices={['Lambda', 'API Gateway', 'S3', 'DynamoDB', 'CloudWatch', 'IAM']}
+      infographicPath="/images/infographics/lambda-simple.svg"
+      infographicAlt="AWS Lambda Functions Architecture and Event Triggers"
       prerequisites={[
         {
           title: 'AWS Basics',

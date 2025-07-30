@@ -15,6 +15,8 @@ export default function SESEmail() {
       estimatedTime="45 minutes"
       category="Application Services"
       awsServices={['SES', 'Route 53', 'Lambda', 'S3', 'CloudWatch', 'SNS']}
+      infographicPath="/images/infographics/ses-simple.svg"
+      infographicAlt="Amazon SES Email Service Architecture and Delivery Flow"
       prerequisites={[
         {
           title: 'AWS Basics',

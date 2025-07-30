@@ -15,6 +15,8 @@ export default function IAMPermissions() {
       estimatedTime="50 minutes"
       category="Security"
       awsServices={['IAM', 'CloudTrail', 'Access Analyzer', 'Secrets Manager', 'STS']}
+      infographicPath="/images/infographics/iam-simple.svg"
+      infographicAlt="AWS IAM Permissions and Security Model"
       prerequisites={[
         {
           title: 'AWS Basics',

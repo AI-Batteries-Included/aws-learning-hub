@@ -15,6 +15,8 @@ export default function S3Storage() {
       estimatedTime="45 minutes"
       category="Storage"
       awsServices={['S3', 'IAM', 'CloudFront', 'KMS']}
+      infographicPath="/images/infographics/s3-clean.svg"
+      infographicAlt="Amazon S3 Storage Architecture and Key Concepts Infographic"
       prerequisites={[
         {
           title: 'AWS Basics',

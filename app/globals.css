@@ -732,6 +732,29 @@ a:hover {
   align-items: center;
 }
 
+/* Infographic Section */
+.infographic-section {
+  margin: 2rem 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.component-infographic {
+  width: 100%;
+  height: auto;
+  max-width: 800px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.component-infographic:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+}
+
 .meta-badges {
   display: flex;
   gap: 0.75rem;
@@ -1007,5 +1030,14 @@ a:hover {
   .mdx-content ol,
   .mdx-content ul {
     padding-left: 1.5rem;
+  }
+  
+  .infographic-section {
+    margin: 1.5rem 0;
+  }
+  
+  .component-infographic {
+    max-width: 100%;
+    border-radius: 8px;
   }
 }
