@@ -1,0 +1,591 @@
+# Amazon SES Email
+
+Send transactional and marketing emails reliably with Amazon Simple Email Service. Learn domain verification, email templates, and delivery optimization.
+
+## What is Amazon SES?
+
+Amazon Simple Email Service (SES) is a cloud-based email service that provides a cost-effective way to send and receive email using your own email addresses and domains. It's designed for bulk and transactional email sending with high deliverability rates.
+
+### Key Benefits
+- **High deliverability** - Built-in reputation management and IP warming
+- **Cost-effective** - Pay only for what you send, no upfront costs
+- **Scalable** - Send millions of emails per day
+- **Flexible** - SMTP interface and REST API support
+- **Reliable** - Multi-region availability with 99.9% uptime SLA
+- **Integrated** - Works seamlessly with other AWS services
+
+## Core Concepts
+
+### Email Sending
+Send transactional emails like confirmations, notifications, and alerts.
+
+**Sending Methods:**
+- **SMTP Interface** - Use existing email applications
+- **SES API** - Direct REST API integration
+- **AWS SDKs** - Language-specific libraries
+- **CLI** - Command-line interface
+
+### Email Receiving
+Process incoming emails with rules and actions.
+
+**Receiving Features:**
+- **Mail receipt rules** - Process incoming emails
+- **S3 integration** - Store emails in buckets
+- **Lambda functions** - Process emails with code
+- **SNS notifications** - Alert on email receipt
+
+### Email Templates
+Create reusable email templates with placeholders.
+
+**Template Types:**
+- **Text templates** - Plain text emails
+- **HTML templates** - Rich formatted emails
+- **Multipart templates** - Both text and HTML versions
+
+## Getting Started
+
+### 1. Verify Your Domain
+
+**Using AWS Console:**
+1. Navigate to SES console
+2. Click "Verified identities"
+3. Create identity → Domain
+4. Add required DNS records
+5. Wait for verification
+
+**Using CloudFormation:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'SES domain verification'
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Domain to verify for SES
+    Default: example.com
+
+Resources:
+  # SES Domain Identity
+  SESDomainIdentity:
+    Type: AWS::SES::DomainIdentity
+    Properties:
+      Domain: !Ref DomainName
+
+  # DKIM tokens for authentication
+  SESDomainDKIM:
+    Type: AWS::SES::DomainDKIM
+    Properties:
+      Domain: !Ref SESDomainIdentity
+
+  # Configuration set for tracking
+  SESConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: !Sub '${AWS::StackName}-config-set'
+      TrackingOptions:
+        CustomRedirectDomain: !Ref DomainName
+
+Outputs:
+  DomainIdentity:
+    Description: SES Domain Identity
+    Value: !Ref SESDomainIdentity
+    Export:
+      Name: !Sub '${AWS::StackName}-DomainIdentity'
+      
+  DKIMTokens:
+    Description: DKIM verification tokens
+    Value: !Join [',', !GetAtt SESDomainDKIM.DkimTokens]
+    Export:
+      Name: !Sub '${AWS::StackName}-DKIMTokens'
+```
+
+### 2. Set Up DNS Records
+
+Add required DNS records for domain verification and DKIM.
+
+```bash
+# Get DKIM tokens
+aws ses get-identity-dkim-attributes \
+    --identities example.com
+
+# Example DNS records to add:
+# TXT record: _amazonses.example.com -> "verification-token"
+# CNAME records for DKIM:
+# token1._domainkey.example.com -> token1.dkim.amazonses.com
+# token2._domainkey.example.com -> token2.dkim.amazonses.com
+# token3._domainkey.example.com -> token3.dkim.amazonses.com
+```
+
+### 3. Send Your First Email
+
+**Using AWS CLI:**
+```bash
+# Send simple email
+aws ses send-email \
+    --source "sender@example.com" \
+    --destination ToAddresses="recipient@example.com" \
+    --message Subject={Data="Test Email",Charset="UTF-8"},Body={Text={Data="Hello from SES!",Charset="UTF-8"}}
+
+# Send templated email
+aws ses send-templated-email \
+    --source "sender@example.com" \
+    --destination ToAddresses="recipient@example.com" \
+    --template "MyTemplate" \
+    --template-data '{"name":"John","product":"Widget"}'
+```
+
+**Using Python SDK:**
+```python
+import boto3
+from botocore.exceptions import ClientError
+
+# Create SES client
+ses_client = boto3.client('ses', region_name='us-east-1')
+
+def send_email(sender, recipient, subject, body_text, body_html=None):
+    """Send an email via Amazon SES"""
+    
+    # Email body
+    body = {'Text': {'Data': body_text, 'Charset': 'UTF-8'}}
+    if body_html:
+        body['Html'] = {'Data': body_html, 'Charset': 'UTF-8'}
+    
+    try:
+        response = ses_client.send_email(
+            Source=sender,
+            Destination={'ToAddresses': [recipient]},
+            Message={
+                'Subject': {'Data': subject, 'Charset': 'UTF-8'},
+                'Body': body
+            }
+        )
+        print(f"Email sent! Message ID: {response['MessageId']}")
+        return response['MessageId']
+        
+    except ClientError as e:
+        print(f"Error sending email: {e.response['Error']['Message']}")
+        return None
+
+# Send email
+send_email(
+    sender="sender@example.com",
+    recipient="recipient@example.com", 
+    subject="Test Email",
+    body_text="Hello from Amazon SES!",
+    body_html="<h1>Hello from Amazon SES!</h1>"
+)
+```
+
+## Email Templates
+
+### Creating Templates
+
+**Template Structure:**
+```json
+{
+  "TemplateName": "WelcomeEmail",
+  "Subject": "Welcome to {{companyName}}, {{firstName}}!",
+  "TextPart": "Hi {{firstName}},\n\nWelcome to {{companyName}}!\n\nBest regards,\nThe Team",
+  "HtmlPart": "<html><body><h1>Hi {{firstName}},</h1><p>Welcome to <strong>{{companyName}}</strong>!</p><p>Best regards,<br>The Team</p></body></html>"
+}
+```
+
+**Using CloudFormation:**
+```yaml
+# Email template
+WelcomeEmailTemplate:
+  Type: AWS::SES::Template
+  Properties:
+    Template:
+      TemplateName: WelcomeEmail
+      Subject: "Welcome to {{companyName}}, {{firstName}}!"
+      TextPart: |
+        Hi {{firstName}},
+        
+        Welcome to {{companyName}}! We're excited to have you on board.
+        
+        Get started by:
+        1. Completing your profile
+        2. Exploring our features
+        3. Joining our community
+        
+        If you have questions, reply to this email.
+        
+        Best regards,
+        The {{companyName}} Team
+      HtmlPart: |
+        <html>
+        <body style="font-family: Arial, sans-serif;">
+          <div style="max-width: 600px; margin: 0 auto;">
+            <h1 style="color: #333;">Hi {{firstName}},</h1>
+            <p>Welcome to <strong>{{companyName}}</strong>! We're excited to have you on board.</p>
+            
+            <h2>Get Started:</h2>
+            <ol>
+              <li>Complete your profile</li>
+              <li>Explore our features</li>
+              <li>Join our community</li>
+            </ol>
+            
+            <p>If you have questions, reply to this email.</p>
+            
+            <p>Best regards,<br>The {{companyName}} Team</p>
+          </div>
+        </body>
+        </html>
+```
+
+### Using Templates with Variables
+
+```python
+def send_welcome_email(recipient, first_name, company_name):
+    """Send welcome email using template"""
+    
+    template_data = {
+        'firstName': first_name,
+        'companyName': company_name
+    }
+    
+    try:
+        response = ses_client.send_templated_email(
+            Source='welcome@example.com',
+            Destination={'ToAddresses': [recipient]},
+            Template='WelcomeEmail',
+            TemplateData=json.dumps(template_data)
+        )
+        return response['MessageId']
+        
+    except ClientError as e:
+        print(f"Error: {e.response['Error']['Message']}")
+        return None
+```
+
+## Configuration Sets
+
+### Tracking and Analytics
+
+Monitor email performance with configuration sets.
+
+```yaml
+# Configuration set with event publishing
+EmailConfigSet:
+  Type: AWS::SES::ConfigurationSet
+  Properties:
+    Name: ProductionEmails
+    TrackingOptions:
+      CustomRedirectDomain: track.example.com
+
+# CloudWatch event destination
+CloudWatchEventDestination:
+  Type: AWS::SES::ConfigurationSetEventDestination
+  Properties:
+    ConfigurationSetName: !Ref EmailConfigSet
+    EventDestination:
+      Name: CloudWatchDestination
+      Enabled: true
+      MatchingEventTypes:
+        - send
+        - bounce
+        - complaint
+        - delivery
+        - reject
+      CloudWatchDestination:
+        DefaultDimensionValue: default
+        DimensionConfigurations:
+          - DimensionName: MessageTag
+            DimensionValueSource: messageTag
+```
+
+### Suppression Lists
+
+Manage bounces and complaints automatically.
+
+```python
+def handle_bounce_complaint(event_type, recipient, reason):
+    """Handle bounced or complained emails"""
+    
+    if event_type in ['bounce', 'complaint']:
+        # Add to suppression list
+        try:
+            ses_client.put_suppressed_destination(
+                EmailAddress=recipient,
+                Reason=event_type.upper()
+            )
+            print(f"Added {recipient} to suppression list: {reason}")
+            
+        except ClientError as e:
+            print(f"Error managing suppression list: {e}")
+```
+
+## Email Receiving
+
+### Receipt Rules
+
+Process incoming emails with automated rules.
+
+```yaml
+# S3 bucket for storing received emails
+EmailReceiptBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: !Sub '${AWS::StackName}-email-receipt'
+    PublicAccessBlockConfiguration:
+      BlockPublicAcls: true
+      BlockPublicPolicy: true
+      IgnorePublicAcls: true
+      RestrictPublicBuckets: true
+
+# Receipt rule set
+EmailReceiptRuleSet:
+  Type: AWS::SES::ReceiptRuleSet
+  Properties:
+    RuleSetName: ProductionRuleSet
+
+# Receipt rule for support emails
+SupportEmailRule:
+  Type: AWS::SES::ReceiptRule
+  Properties:
+    RuleSetName: !Ref EmailReceiptRuleSet
+    Rule:
+      Name: SupportRule
+      Enabled: true
+      Recipients:
+        - support@example.com
+      Actions:
+        # Store email in S3
+        - S3Action:
+            BucketName: !Ref EmailReceiptBucket
+            ObjectKeyPrefix: support/
+        # Trigger Lambda function
+        - LambdaAction:
+            FunctionArn: !GetAtt ProcessEmailFunction.Arn
+```
+
+### Lambda Email Processing
+
+```python
+import json
+import boto3
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
+def lambda_handler(event, context):
+    """Process received emails"""
+    
+    # Parse SES event
+    ses_event = event['Records'][0]['ses']
+    receipt = ses_event['receipt']
+    
+    # Extract email details
+    message_id = receipt['messageId']
+    recipients = receipt['recipients']
+    source = ses_event['mail']['commonHeaders']['from'][0]
+    subject = ses_event['mail']['commonHeaders']['subject']
+    
+    print(f"Processing email: {message_id}")
+    print(f"From: {source}")
+    print(f"Subject: {subject}")
+    
+    # Process based on recipient
+    for recipient in recipients:
+        if recipient == 'support@example.com':
+            # Create support ticket
+            create_support_ticket(source, subject, message_id)
+        elif recipient == 'sales@example.com':
+            # Add to CRM
+            add_to_crm(source, subject)
+    
+    return {'statusCode': 200}
+
+def create_support_ticket(sender, subject, message_id):
+    """Create support ticket from email"""
+    # Integration with ticketing system
+    print(f"Creating support ticket for {sender}: {subject}")
+```
+
+## Security Best Practices
+
+### Domain Authentication
+
+```yaml
+# MAIL FROM domain
+SESMailFromDomain:
+  Type: AWS::SES::MailFromDomainAttributes
+  Properties:
+    Domain: !Ref SESDomainIdentity
+    MailFromDomain: !Sub 'mail.${DomainName}'
+    BehaviorOnMXFailure: UseDefaultValue
+
+# Route 53 records for MAIL FROM
+MailFromMXRecord:
+  Type: AWS::Route53::RecordSet
+  Properties:
+    HostedZoneId: !Ref HostedZone
+    Name: !Sub 'mail.${DomainName}'
+    Type: MX
+    TTL: 300
+    ResourceRecords:
+      - '10 feedback-smtp.us-east-1.amazonses.com'
+```
+
+### IAM Policies
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendTemplatedEmail"
+      ],
+      "Resource": [
+        "arn:aws:ses:us-east-1:123456789012:identity/example.com"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "ses:FromAddress": [
+            "noreply@example.com",
+            "support@example.com"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+## Monitoring and Analytics
+
+### CloudWatch Metrics
+
+Track email performance and deliverability.
+
+```yaml
+# Bounce rate alarm
+BounceRateAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: SES-High-Bounce-Rate
+    AlarmDescription: SES bounce rate is too high
+    MetricName: Bounce
+    Namespace: AWS/SES
+    Statistic: Average
+    Period: 300
+    EvaluationPeriods: 2
+    Threshold: 0.05  # 5% bounce rate
+    ComparisonOperator: GreaterThanThreshold
+    AlarmActions:
+      - !Ref SNSAlert
+
+# Complaint rate alarm  
+ComplaintRateAlarm:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: SES-High-Complaint-Rate
+    AlarmDescription: SES complaint rate is too high
+    MetricName: Complaint
+    Namespace: AWS/SES
+    Statistic: Average
+    Period: 300
+    EvaluationPeriods: 2
+    Threshold: 0.001  # 0.1% complaint rate
+    ComparisonOperator: GreaterThanThreshold
+```
+
+## Best Practices
+
+### Deliverability
+- ✅ **Verify domains and enable DKIM** - Improve authentication
+- ✅ **Warm up IP addresses gradually** - Build sender reputation
+- ✅ **Monitor bounce and complaint rates** - Stay below AWS limits
+- ✅ **Use double opt-in** - Ensure recipients want emails
+- ✅ **Maintain clean lists** - Remove invalid addresses
+- ✅ **Authenticate with SPF/DMARC** - Prevent spoofing
+
+### Security
+- ✅ **Use IAM policies** - Restrict sending permissions
+- ✅ **Enable logging** - Track all email activity
+- ✅ **Validate input** - Prevent injection attacks
+- ✅ **Use encrypted connections** - SMTP with TLS
+- ✅ **Regular security audits** - Review permissions
+- ✅ **Rate limiting** - Prevent abuse
+
+### Performance
+- ✅ **Use templates** - Reduce API calls and errors
+- ✅ **Batch operations** - Send multiple emails efficiently
+- ✅ **Handle errors gracefully** - Implement retry logic
+- ✅ **Monitor quotas** - Track sending limits
+- ✅ **Optimize content** - Reduce email size
+- ✅ **Use configuration sets** - Track performance
+
+## Real-World Example: E-commerce Email System
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  # SES Domain and DKIM
+  StoreDomain:
+    Type: AWS::SES::DomainIdentity
+    Properties:
+      Domain: shop.example.com
+
+  StoreDKIM:
+    Type: AWS::SES::DomainDKIM
+    Properties:
+      Domain: !Ref StoreDomain
+
+  # Configuration set for tracking
+  StoreConfigSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: EcommerceEmails
+
+  # Email templates
+  OrderConfirmationTemplate:
+    Type: AWS::SES::Template
+    Properties:
+      Template:
+        TemplateName: OrderConfirmation
+        Subject: "Order Confirmation #{{orderNumber}}"
+        HtmlPart: |
+          <html><body>
+            <h1>Thanks for your order, {{customerName}}!</h1>
+            <p>Order #{{orderNumber}} for ${{orderTotal}} is confirmed.</p>
+            <h2>Items:</h2>
+            {{#items}}
+            <p>{{name}} - {{quantity}} x ${{price}}</p>
+            {{/items}}
+          </body></html>
+
+  # Lambda function for order emails
+  OrderEmailFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: SendOrderEmails
+      Runtime: python3.9
+      Handler: index.lambda_handler
+      Code:
+        ZipFile: |
+          import boto3
+          import json
+          
+          ses = boto3.client('ses')
+          
+          def lambda_handler(event, context):
+              order = json.loads(event['body'])
+              
+              # Send order confirmation
+              ses.send_templated_email(
+                  Source='orders@shop.example.com',
+                  Destination={'ToAddresses': [order['email']]},
+                  Template='OrderConfirmation',
+                  TemplateData=json.dumps(order)
+              )
+              
+              return {'statusCode': 200}
+```
+
+This comprehensive SES guide covers everything from basic email sending to advanced e-commerce integration patterns!

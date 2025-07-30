@@ -412,135 +412,6 @@ aws route53 create-health-check \
 aws route53 list-health-checks
 ```
 
-## Advanced Features
-
-### Private DNS (Route 53 Resolver)
-
-Resolve DNS queries between your VPCs and on-premises networks.
-
-```yaml
-# Private hosted zone
-PrivateHostedZone:
-  Type: AWS::Route53::HostedZone
-  Properties:
-    Name: internal.company.com
-    VPCs:
-      - VPCId: !Ref VPC
-        VPCRegion: !Ref AWS::Region
-    HostedZoneConfig:
-      Comment: Private zone for internal services
-
-# Internal service record
-InternalServiceRecord:
-  Type: AWS::Route53::RecordSet
-  Properties:
-    HostedZoneId: !Ref PrivateHostedZone
-    Name: database.internal.company.com
-    Type: A
-    TTL: 300
-    ResourceRecords:
-      - 10.0.1.100
-
-# Route 53 Resolver endpoint
-ResolverEndpoint:
-  Type: AWS::Route53Resolver::ResolverEndpoint
-  Properties:
-    Direction: INBOUND
-    IpAddresses:
-      - SubnetId: !Ref PrivateSubnet1
-        Ip: 10.0.1.10
-      - SubnetId: !Ref PrivateSubnet2
-        Ip: 10.0.2.10
-    SecurityGroupIds:
-      - !Ref ResolverSecurityGroup
-```
-
-### DNS Firewall
-
-Protect against DNS-based threats.
-
-```yaml
-FirewallRuleGroup:
-  Type: AWS::Route53Resolver::FirewallRuleGroup
-  Properties:
-    Name: MalwareDomainBlocking
-    Rules:
-      - Action: BLOCK
-        BlockResponse: NXDOMAIN
-        FirewallDomainListId: !Ref MalwareDomainList
-        Priority: 100
-        Name: BlockMalware
-
-FirewallConfig:
-  Type: AWS::Route53Resolver::FirewallConfig
-  Properties:
-    ResourceId: !Ref VPC
-    FirewallFailOpen: ENABLED
-    
-FirewallRuleGroupAssociation:
-  Type: AWS::Route53Resolver::FirewallRuleGroupAssociation
-  Properties:
-    FirewallRuleGroupId: !Ref FirewallRuleGroup
-    VpcId: !Ref VPC
-    Priority: 101
-```
-
-### Traffic Flow
-
-Visual policy editor for complex routing.
-
-```json
-{
-  "AWSTemplateFormatVersion": "2010-09-09",
-  "Resources": {
-    "TrafficPolicy": {
-      "Type": "AWS::Route53::TrafficPolicy",
-      "Properties": {
-        "Name": "ComplexRouting",
-        "Type": "A",
-        "Document": {
-          "RecordType": "A",
-          "StartRule": "site_switch",
-          "Rules": {
-            "site_switch": {
-              "RuleType": "geo",
-              "GeoLocation": {
-                "US": "us_resources",
-                "EU": "eu_resources",
-                "*": "default_resources"
-              }
-            },
-            "us_resources": {
-              "RuleType": "loadbalance",
-              "Locations": [
-                {
-                  "EndpointReference": "us_east_primary",
-                  "Weight": 70
-                },
-                {
-                  "EndpointReference": "us_west_backup",
-                  "Weight": 30
-                }
-              ]
-            }
-          },
-          "Endpoints": {
-            "us_east_primary": {
-              "Type": "value",
-              "Value": "192.0.2.1"
-            },
-            "us_west_backup": {
-              "Type": "value", 
-              "Value": "192.0.2.2"
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
 ## AWS Service Integration
 
 ### CloudFront Integration
@@ -660,24 +531,6 @@ StaticRecord:
     TTL: 86400  # 24 hours
 ```
 
-### Query Logging
-
-Enable query logging for performance analysis.
-
-```yaml
-QueryLoggingConfig:
-  Type: AWS::Route53::QueryLoggingConfig
-  Properties:
-    HostedZoneId: !Ref HostedZone
-    CloudWatchLogsLogGroupArn: !Sub '${QueryLogGroup.Arn}'
-
-QueryLogGroup:
-  Type: AWS::Logs::LogGroup
-  Properties:
-    LogGroupName: /aws/route53/queries
-    RetentionInDays: 30
-```
-
 ## Monitoring and Troubleshooting
 
 ### CloudWatch Metrics
@@ -702,21 +555,6 @@ HealthCheckAlarm:
         Value: !Ref WebServerHealthCheck
     AlarmActions:
       - !Ref SNSAlert
-
-QueryCountAlarm:
-  Type: AWS::CloudWatch::Alarm
-  Properties:
-    AlarmName: Route53-High-Query-Count
-    MetricName: QueryCount
-    Namespace: AWS/Route53
-    Statistic: Sum
-    Period: 300
-    EvaluationPeriods: 2
-    Threshold: 10000
-    ComparisonOperator: GreaterThanThreshold
-    Dimensions:
-      - Name: HostedZoneId
-        Value: !Ref HostedZone
 ```
 
 ### DNS Testing Tools
@@ -739,29 +577,6 @@ dig example.com ANY
 
 # Test health check endpoint
 curl -I https://api.example.com/health
-```
-
-## Cost Optimization
-
-### Pricing Components
-
-**Route 53 Pricing:**
-- **Hosted zones** - $0.50 per hosted zone per month
-- **Standard queries** - $0.40 per million queries
-- **Latency-based routing** - $0.60 per million queries
-- **Geo DNS queries** - $0.70 per million queries
-- **Health checks** - $0.50 per health check per month
-
-```bash
-# Monitor query count
-aws cloudwatch get-metric-statistics \
-    --namespace AWS/Route53 \
-    --metric-name QueryCount \
-    --dimensions Name=HostedZoneId,Value=Z123456789 \
-    --start-time 2024-01-01T00:00:00Z \
-    --end-time 2024-01-31T23:59:59Z \
-    --period 86400 \
-    --statistics Sum
 ```
 
 ## Best Practices
@@ -787,65 +602,10 @@ aws cloudwatch get-metric-statistics \
 - ✅ **Use CloudWatch monitoring** - Track DNS performance
 - ✅ **Regular testing** - Verify DNS resolution from different locations
 
-### Operations
-- ✅ **Use Infrastructure as Code** - CloudFormation/CDK for DNS
-- ✅ **Implement change controls** - Review DNS changes
-- ✅ **Document routing policies** - For team understanding
-- ✅ **Automate health checks** - Integrate with deployment pipelines
-- ✅ **Plan for disaster recovery** - DNS failover strategies
-
-## Troubleshooting Common Issues
-
-### DNS Propagation Delays
-
-```bash
-# Check propagation status
-dig @8.8.8.8 example.com A
-dig @1.1.1.1 example.com A
-dig @208.67.222.222 example.com A
-
-# Check from different regions
-curl -s "https://www.whatsmydns.net/api/details?server=world&type=A&query=example.com"
-```
-
-### Health Check Failures
-
-```bash
-# Test health check endpoint
-curl -v https://api.example.com/health
-
-# Check health check status
-aws route53 get-health-check-status \
-    --health-check-id 12345678-1234-1234-1234-123456789012
-
-# View health check failure reasons
-aws route53 get-health-check-last-failure-reason \
-    --health-check-id 12345678-1234-1234-1234-123456789012
-```
-
-### Record Set Conflicts
-
-```bash
-# List all records in hosted zone
-aws route53 list-resource-record-sets \
-    --hosted-zone-id Z123456789
-
-# Check for conflicting records
-aws route53 list-resource-record-sets \
-    --hosted-zone-id Z123456789 \
-    --query "ResourceRecordSets[?Name=='example.com.']"
-```
-
 ## Real-World Example: Multi-Region Web Application
 
 Let's build a complete DNS setup for a global web application:
 
-**Architecture:**
-```
-Users → Route 53 → CloudFront → ALB (Multi-Region) → ECS/EC2
-```
-
-**1. Infrastructure Setup:**
 ```yaml
 AWSTemplateFormatVersion: '2010-09-09'
 Description: 'Multi-region DNS setup with failover'
@@ -924,45 +684,6 @@ Resources:
         DNSName: !GetAtt CloudFrontDistribution.DomainName
         HostedZoneId: Z2FDTNDATAQYW2
 
-  # Failover configuration
-  PrimaryFailoverRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: app.myapp.com
-      Type: A
-      TTL: 60
-      SetIdentifier: Primary
-      Failover: PRIMARY
-      HealthCheckId: !Ref USEastHealthCheck
-      ResourceRecords:
-        - 192.0.2.1
-
-  SecondaryFailoverRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      Name: app.myapp.com
-      Type: A
-      TTL: 60
-      SetIdentifier: Secondary
-      Failover: SECONDARY
-      ResourceRecords:
-        - 192.0.2.2
-
-  # Query logging
-  QueryLoggingConfig:
-    Type: AWS::Route53::QueryLoggingConfig
-    Properties:
-      HostedZoneId: !Ref HostedZone
-      CloudWatchLogsLogGroupArn: !GetAtt QueryLogGroup.Arn
-
-  QueryLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: /aws/route53/myapp-queries
-      RetentionInDays: 30
-
 Outputs:
   HostedZoneId:
     Description: Hosted Zone ID
@@ -973,44 +694,6 @@ Outputs:
   NameServers:
     Description: Name servers for the domain
     Value: !Join [',', !GetAtt HostedZone.NameServers]
-```
-
-**2. Monitoring Dashboard:**
-```yaml
-Route53Dashboard:
-  Type: AWS::CloudWatch::Dashboard
-  Properties:
-    DashboardName: Route53-Monitoring
-    DashboardBody: !Sub |
-      {
-        "widgets": [
-          {
-            "type": "metric",
-            "properties": {
-              "metrics": [
-                [ "AWS/Route53", "QueryCount", "HostedZoneId", "${HostedZone}" ]
-              ],
-              "period": 300,
-              "stat": "Sum",
-              "region": "us-east-1",
-              "title": "DNS Query Count"
-            }
-          },
-          {
-            "type": "metric",
-            "properties": {
-              "metrics": [
-                [ "AWS/Route53", "HealthCheckStatus", "HealthCheckId", "${USEastHealthCheck}" ],
-                [ ".", ".", ".", "${EUWestHealthCheck}" ]
-              ],
-              "period": 60,
-              "stat": "Average",
-              "region": "us-east-1",
-              "title": "Health Check Status"
-            }
-          }
-        ]
-      }
 ```
 
 This comprehensive Route 53 guide covers everything from basic DNS concepts to advanced multi-region routing patterns. Practice with the examples and gradually build more complex DNS solutions!

@@ -1,0 +1,460 @@
+# AWS Lambda Functions
+
+Master serverless computing with AWS Lambda - build and run applications without managing servers. Learn function development, event triggers, and optimization techniques.
+
+## What is AWS Lambda?
+
+AWS Lambda is a serverless compute service that runs your code in response to events and automatically manages the underlying compute resources. You pay only for the compute time you consume - there's no charge when your code isn't running.
+
+### Key Benefits
+- **No servers to manage** - AWS handles infrastructure automatically
+- **Automatic scaling** - From zero to thousands of concurrent executions
+- **Pay per use** - Charged only for compute time (100ms increments)
+- **High availability** - Built-in fault tolerance and redundancy
+- **Event-driven** - Responds to events from 200+ AWS services
+- **Multiple runtimes** - Supports Python, Node.js, Java, C#, Go, Ruby, and more
+
+## Core Concepts
+
+### Functions
+The fundamental unit of Lambda - your code packaged with configuration.
+
+**Function Components:**
+- **Code** - Your application logic
+- **Runtime** - Execution environment (Python 3.9, Node.js 18, etc.)
+- **Handler** - Entry point method in your code
+- **Memory** - Allocated memory (128MB to 10GB)
+- **Timeout** - Maximum execution time (15 minutes max)
+- **Environment Variables** - Configuration key-value pairs
+
+### Event Sources
+Services that trigger your Lambda functions.
+
+**Common Event Sources:**
+- **API Gateway** - HTTP requests
+- **S3** - Object creation/deletion
+- **DynamoDB** - Stream changes
+- **CloudWatch Events** - Scheduled triggers
+- **SQS** - Message queue processing
+- **SNS** - Notification processing
+- **CloudFront** - Edge functions
+
+### Execution Environment
+Lambda manages the compute infrastructure for you.
+
+**Execution Model:**
+1. **Cold Start** - New execution environment initialization
+2. **Warm Start** - Reusing existing execution environment  
+3. **Concurrent Executions** - Multiple instances for high load
+4. **Automatic Scaling** - Up to 1000 concurrent by default
+
+## Getting Started
+
+### 1. Create Your First Lambda Function
+
+**Using AWS Console:**
+1. Navigate to Lambda console
+2. Click "Create function"
+3. Choose "Author from scratch"
+4. Configure basic settings
+5. Add your code
+
+**Using AWS CLI:**
+```bash
+# Create function
+aws lambda create-function \
+    --function-name hello-world \
+    --runtime python3.9 \
+    --role arn:aws:iam::123456789012:role/lambda-execution-role \
+    --handler lambda_function.lambda_handler \
+    --zip-file fileb://function.zip
+
+# Invoke function
+aws lambda invoke \
+    --function-name hello-world \
+    --payload '{"key1": "value1"}' \
+    response.json
+```
+
+**Using CloudFormation:**
+```yaml
+HelloWorldFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    FunctionName: hello-world
+    Runtime: python3.9
+    Handler: index.handler
+    Role: !GetAtt LambdaExecutionRole.Arn
+    Code:
+      ZipFile: |
+        import json
+        
+        def handler(event, context):
+            return {
+                'statusCode': 200,
+                'body': json.dumps('Hello from Lambda!')
+            }
+
+LambdaExecutionRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+```
+
+### 2. Hello World Example
+
+**Python:**
+```python
+import json
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def lambda_handler(event, context):
+    """
+    Simple Hello World Lambda function
+    """
+    logger.info(f'Event: {json.dumps(event)}')
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps({
+            'message': 'Hello from Lambda!',
+            'requestId': context.aws_request_id,
+            'functionName': context.function_name
+        })
+    }
+```
+
+**Node.js:**
+```javascript
+exports.handler = async (event, context) => {
+    console.log('Event:', JSON.stringify(event, null, 2));
+    
+    return {
+        statusCode: 200,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+            message: 'Hello from Lambda!',
+            requestId: context.awsRequestId,
+            functionName: context.functionName
+        })
+    };
+};
+```
+
+### 3. Test Your Function
+
+```bash
+# Test with sample event
+aws lambda invoke \
+    --function-name hello-world \
+    --payload '{"name": "World"}' \
+    --cli-binary-format raw-in-base64-out \
+    response.json
+
+# View response
+cat response.json
+```
+
+## Common Patterns
+
+### 1. API Gateway Integration
+
+Create REST APIs with Lambda backends.
+
+```yaml
+ApiGateway:
+  Type: AWS::ApiGateway::RestApi
+  Properties:
+    Name: MyAPI
+
+ApiResource:
+  Type: AWS::ApiGateway::Resource
+  Properties:
+    RestApiId: !Ref ApiGateway
+    ParentId: !GetAtt ApiGateway.RootResourceId
+    PathPart: users
+
+ApiMethod:
+  Type: AWS::ApiGateway::Method
+  Properties:
+    RestApiId: !Ref ApiGateway
+    ResourceId: !Ref ApiResource
+    HttpMethod: GET
+    AuthorizationType: NONE
+    Integration:
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserFunction.Arn}/invocations'
+```
+
+### 2. S3 Event Processing
+
+Process files uploaded to S3 automatically.
+
+```python
+import json
+import boto3
+import urllib.parse
+
+s3 = boto3.client('s3')
+
+def handler(event, context):
+    for record in event['Records']:
+        bucket = record['s3']['bucket']['name']
+        key = urllib.parse.unquote_plus(record['s3']['object']['key'])
+        
+        print(f'Processing {key} from bucket {bucket}')
+        
+        # Process the file
+        response = s3.get_object(Bucket=bucket, Key=key)
+        content = response['Body'].read()
+        
+        # Your processing logic here
+        print(f'File size: {len(content)} bytes')
+    
+    return {'status': 'success'}
+```
+
+### 3. Scheduled Tasks
+
+Run code on a schedule using CloudWatch Events.
+
+```yaml
+ScheduledFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    Runtime: python3.9
+    Handler: scheduler.handler
+    Code:
+      ZipFile: |
+        import json
+        import boto3
+        from datetime import datetime
+        
+        def handler(event, context):
+            print(f'Scheduled execution at {datetime.now()}')
+            
+            # Your scheduled task logic here
+            # e.g., cleanup old files, send reports, etc.
+            
+            return {'status': 'completed'}
+
+ScheduleRule:
+  Type: AWS::Events::Rule
+  Properties:
+    Description: 'Run Lambda every hour'
+    ScheduleExpression: 'rate(1 hour)'
+    State: ENABLED
+    Targets:
+      - Arn: !GetAtt ScheduledFunction.Arn
+        Id: ScheduledFunctionTarget
+```
+
+## Performance Optimization
+
+### Memory and CPU Allocation
+
+Lambda allocates CPU proportional to memory. More memory = more CPU power.
+
+```python
+# Memory settings affect performance
+# 128 MB = 0.1 vCPU
+# 1024 MB = 0.8 vCPU  
+# 1792 MB = 1 vCPU
+# 3008 MB = 1.75 vCPU
+```
+
+**Optimization Strategy:**
+```python
+import time
+import os
+
+def lambda_handler(event, context):
+    memory_mb = int(os.environ.get('AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 128))
+    
+    start_time = time.time()
+    
+    # CPU-intensive task
+    result = perform_calculation()
+    
+    execution_time = time.time() - start_time
+    
+    print(f'Memory: {memory_mb}MB, Time: {execution_time:.2f}s')
+    
+    return result
+```
+
+### Cold Start Optimization
+
+Minimize cold start impact:
+
+```python
+import boto3
+import json
+
+# Initialize outside handler (runs once per container)
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('users')
+
+def lambda_handler(event, context):
+    # Handler runs for each invocation
+    user_id = event['userId']
+    
+    # Use pre-initialized resources
+    response = table.get_item(Key={'id': user_id})
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(response.get('Item', {}))
+    }
+```
+
+## Error Handling and Monitoring
+
+### Robust Error Handling
+
+```python
+import json
+import logging
+import traceback
+from botocore.exceptions import ClientError
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def lambda_handler(event, context):
+    try:
+        # Main logic
+        result = process_event(event)
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps(result)
+        }
+        
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        logger.error(f'AWS Client Error {error_code}: {str(e)}')
+        
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': 'AWS service error',
+                'code': error_code
+            })
+        }
+        
+    except ValueError as e:
+        logger.error(f'Validation error: {str(e)}')
+        
+        return {
+            'statusCode': 400,
+            'body': json.dumps({
+                'error': 'Invalid input',
+                'message': str(e)
+            })
+        }
+        
+    except Exception as e:
+        logger.error(f'Unexpected error: {str(e)}')
+        logger.error(traceback.format_exc())
+        
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': 'Internal server error'
+            })
+        }
+
+def process_event(event):
+    # Your business logic
+    if not event.get('required_field'):
+        raise ValueError('required_field is missing')
+    
+    return {'result': 'success'}
+```
+
+### CloudWatch Monitoring
+
+```python
+import boto3
+import json
+from datetime import datetime
+
+cloudwatch = boto3.client('cloudwatch')
+
+def lambda_handler(event, context):
+    start_time = datetime.now()
+    
+    try:
+        result = process_request(event)
+        
+        # Success metric
+        put_custom_metric('ProcessedRequests', 1, 'Count')
+        
+        return result
+        
+    except Exception as e:
+        # Error metric
+        put_custom_metric('ErrorRequests', 1, 'Count')
+        raise
+        
+    finally:
+        # Duration metric
+        duration = (datetime.now() - start_time).total_seconds()
+        put_custom_metric('ProcessingDuration', duration, 'Seconds')
+
+def put_custom_metric(metric_name, value, unit):
+    cloudwatch.put_metric_data(
+        Namespace='MyApplication',
+        MetricData=[{
+            'MetricName': metric_name,
+            'Value': value,
+            'Unit': unit,
+            'Timestamp': datetime.now()
+        }]
+    )
+```
+
+## Best Practices
+
+### Performance
+- ✅ **Right-size memory allocation** - Balance cost and performance
+- ✅ **Minimize cold starts** - Initialize outside handler
+- ✅ **Use connection pooling** - Reuse database connections
+- ✅ **Optimize package size** - Use Lambda layers for shared code
+- ✅ **Monitor metrics** - Track duration, errors, and concurrency
+
+### Security
+- ✅ **Least privilege IAM** - Grant minimal required permissions
+- ✅ **Environment variable encryption** - Use KMS for secrets
+- ✅ **VPC configuration** - For database access
+- ✅ **Input validation** - Validate all incoming data
+- ✅ **Regular security reviews** - Audit function permissions
+
+### Cost Optimization
+- ✅ **Right-size memory settings** - Test different configurations
+- ✅ **Use reserved concurrency** - Control concurrent executions
+- ✅ **Monitor invocation patterns** - Optimize for usage
+- ✅ **Clean up unused functions** - Remove old versions
+- ✅ **Use Provisioned Concurrency** - Only for critical functions
+
+This comprehensive Lambda guide covers everything from basic concepts to advanced serverless patterns. Practice with the examples and gradually build more complex serverless applications!

@@ -1,10 +1,905 @@
-# AWS Lambda
+# AWS Lambda Functions
 
-*Placeholder for Lambda content*
+Master serverless computing with AWS Lambda - build and run applications without managing servers. Learn function development, event triggers, and optimization techniques.
 
-Coming soon: Serverless computing with AWS Lambda.
+## What is AWS Lambda?
 
-## Topics to Cover
-- Function development
-- Event triggers
-- Performance optimization
+AWS Lambda is a serverless compute service that runs your code in response to events and automatically manages the underlying compute resources. You pay only for the compute time you consume - there's no charge when your code isn't running.
+
+### Key Benefits
+- **No servers to manage** - AWS handles infrastructure automatically
+- **Automatic scaling** - From zero to thousands of concurrent executions
+- **Pay per use** - Charged only for compute time (100ms increments)
+- **High availability** - Built-in fault tolerance and redundancy
+- **Event-driven** - Responds to events from 200+ AWS services
+- **Multiple runtimes** - Supports Python, Node.js, Java, C#, Go, Ruby, and more
+
+## Core Concepts
+
+### Functions
+The fundamental unit of Lambda - your code packaged with configuration.
+
+**Function Components:**
+- **Code** - Your application logic
+- **Runtime** - Execution environment (Python 3.9, Node.js 18, etc.)
+- **Handler** - Entry point method in your code
+- **Memory** - Allocated memory (128MB to 10GB)
+- **Timeout** - Maximum execution time (15 minutes max)
+- **Environment Variables** - Configuration key-value pairs
+
+### Event Sources
+Services that trigger your Lambda functions.
+
+**Common Event Sources:**
+- **API Gateway** - HTTP requests
+- **S3** - Object creation/deletion
+- **DynamoDB** - Stream changes
+- **CloudWatch Events** - Scheduled triggers
+- **SQS** - Message queue processing
+- **SNS** - Notification processing
+- **CloudFront** - Edge functions
+
+### Execution Environment
+Lambda manages the compute infrastructure for you.
+
+**Execution Model:**
+1. **Cold Start** - New execution environment initialization
+2. **Warm Start** - Reusing existing execution environment  
+3. **Concurrent Executions** - Multiple instances for high load
+4. **Automatic Scaling** - Up to 1000 concurrent by default
+
+## Getting Started
+
+### 1. Create Your First Lambda Function
+
+**Using AWS Console:**
+1. Navigate to Lambda console
+2. Click "Create function"
+3. Choose "Author from scratch"
+4. Configure basic settings
+5. Add your code
+
+**Using AWS CLI:**
+```bash
+# Create function
+aws lambda create-function \
+    --function-name hello-world \
+    --runtime python3.9 \
+    --role arn:aws:iam::123456789012:role/lambda-execution-role \
+    --handler lambda_function.lambda_handler \
+    --zip-file fileb://function.zip
+
+# Invoke function
+aws lambda invoke \
+    --function-name hello-world \
+    --payload '{"key1": "value1"}' \
+    response.json
+```
+
+**Using CloudFormation:**
+```yaml
+HelloWorldFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    FunctionName: hello-world
+    Runtime: python3.9
+    Handler: index.handler
+    Role: !GetAtt LambdaExecutionRole.Arn
+    Code:
+      ZipFile: |
+        import json
+        
+        def handler(event, context):
+            return {
+                'statusCode': 200,
+                'body': json.dumps('Hello from Lambda!')
+            }
+
+LambdaExecutionRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+```
+
+### 2. Hello World Example
+
+**Python:**
+```python
+import json
+import logging
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def lambda_handler(event, context):
+    """
+    Simple Hello World Lambda function
+    """
+    logger.info(f'Event: {json.dumps(event)}')
+    
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        'body': json.dumps({
+            'message': 'Hello from Lambda!',
+            'requestId': context.aws_request_id,
+            'functionName': context.function_name
+        })
+    }
+```
+
+**Node.js:**
+```javascript
+exports.handler = async (event, context) => {
+    console.log('Event:', JSON.stringify(event, null, 2));
+    
+    return {
+        statusCode: 200,
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+            message: 'Hello from Lambda!',
+            requestId: context.awsRequestId,
+            functionName: context.functionName
+        })
+    };
+};
+```
+
+### 3. Test Your Function
+
+```bash
+# Test with sample event
+aws lambda invoke \
+    --function-name hello-world \
+    --payload '{"name": "World"}' \
+    --cli-binary-format raw-in-base64-out \
+    response.json
+
+# View response
+cat response.json
+```
+
+## Common Patterns
+
+### 1. API Gateway Integration
+
+Create REST APIs with Lambda backends.
+
+**Setup:**
+```yaml
+ApiGateway:
+  Type: AWS::ApiGateway::RestApi
+  Properties:
+    Name: MyAPI
+
+ApiResource:
+  Type: AWS::ApiGateway::Resource
+  Properties:
+    RestApiId: !Ref ApiGateway
+    ParentId: !GetAtt ApiGateway.RootResourceId
+    PathPart: users
+
+ApiMethod:
+  Type: AWS::ApiGateway::Method
+  Properties:
+    RestApiId: !Ref ApiGateway
+    ResourceId: !Ref ApiResource
+    HttpMethod: GET
+    AuthorizationType: NONE
+    Integration:
+      Type: AWS_PROXY
+      IntegrationHttpMethod: POST
+      Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UserFunction.Arn}/invocations'
+```
+
+**Lambda Function for API:**
+```python
+import json
+import boto3
+
+def lambda_handler(event, context):
+    # Parse request
+    http_method = event['httpMethod']
+    path = event['path']
+    query_params = event.get('queryStringParameters') or {}
+    body = event.get('body')
+    
+    if http_method == 'GET' and path == '/users':
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps([
+                {'id': 1, 'name': 'John Doe'},
+                {'id': 2, 'name': 'Jane Smith'}
+            ])
+        }
+    
+    return {
+        'statusCode': 404,
+        'body': json.dumps({'error': 'Not Found'})
+    }
+```
+
+### 2. S3 Event Processing
+
+Process files uploaded to S3 automatically.
+
+**Event Configuration:**
+```yaml
+S3ProcessorFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    Runtime: python3.9
+    Handler: processor.handler
+    Code:
+      ZipFile: |
+        import json
+        import boto3
+        import urllib.parse
+        
+        s3 = boto3.client('s3')
+        
+        def handler(event, context):
+            for record in event['Records']:
+                bucket = record['s3']['bucket']['name']
+                key = urllib.parse.unquote_plus(record['s3']['object']['key'])
+                
+                print(f'Processing {key} from bucket {bucket}')
+                
+                # Process the file
+                response = s3.get_object(Bucket=bucket, Key=key)
+                content = response['Body'].read()
+                
+                # Your processing logic here
+                print(f'File size: {len(content)} bytes')
+            
+            return {'status': 'success'}
+
+S3BucketPermission:
+  Type: AWS::Lambda::Permission
+  Properties:
+    FunctionName: !Ref S3ProcessorFunction
+    Action: lambda:InvokeFunction
+    Principal: s3.amazonaws.com
+    SourceArn: !Sub 'arn:aws:s3:::${S3Bucket}'
+```
+
+### 3. Scheduled Tasks
+
+Run code on a schedule using CloudWatch Events.
+
+```yaml
+ScheduledFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    Runtime: python3.9
+    Handler: scheduler.handler
+    Code:
+      ZipFile: |
+        import json
+        import boto3
+        from datetime import datetime
+        
+        def handler(event, context):
+            print(f'Scheduled execution at {datetime.now()}')
+            
+            # Your scheduled task logic here
+            # e.g., cleanup old files, send reports, etc.
+            
+            return {'status': 'completed'}
+
+ScheduleRule:
+  Type: AWS::Events::Rule
+  Properties:
+    Description: 'Run Lambda every hour'
+    ScheduleExpression: 'rate(1 hour)'
+    State: ENABLED
+    Targets:
+      - Arn: !GetAtt ScheduledFunction.Arn
+        Id: ScheduledFunctionTarget
+
+SchedulePermission:
+  Type: AWS::Lambda::Permission
+  Properties:
+    FunctionName: !Ref ScheduledFunction
+    Action: lambda:InvokeFunction
+    Principal: events.amazonaws.com
+    SourceArn: !GetAtt ScheduleRule.Arn
+```
+
+### 4. DynamoDB Stream Processing
+
+React to database changes in real-time.
+
+```python
+import json
+import boto3
+
+def lambda_handler(event, context):
+    for record in event['Records']:
+        event_name = record['eventName']
+        
+        if event_name == 'INSERT':
+            handle_insert(record['dynamodb']['NewImage'])
+        elif event_name == 'MODIFY':
+            handle_update(
+                record['dynamodb']['OldImage'],
+                record['dynamodb']['NewImage']
+            )
+        elif event_name == 'REMOVE':
+            handle_delete(record['dynamodb']['OldImage'])
+    
+    return {'status': 'success'}
+
+def handle_insert(new_image):
+    print(f'New item created: {new_image}')
+    # Send welcome email, update analytics, etc.
+
+def handle_update(old_image, new_image):
+    print(f'Item updated from {old_image} to {new_image}')
+    # Sync to search index, notify users, etc.
+
+def handle_delete(old_image):
+    print(f'Item deleted: {old_image}')
+    # Cleanup related resources, audit log, etc.
+```
+
+## Performance Optimization
+
+### Memory and CPU Allocation
+
+Lambda allocates CPU proportional to memory. More memory = more CPU power.
+
+```python
+# Memory settings affect performance
+# 128 MB = 0.1 vCPU
+# 1024 MB = 0.8 vCPU  
+# 1792 MB = 1 vCPU
+# 3008 MB = 1.75 vCPU
+```
+
+**Optimization Strategy:**
+```python
+import time
+import os
+
+def lambda_handler(event, context):
+    memory_mb = int(os.environ.get('AWS_LAMBDA_FUNCTION_MEMORY_SIZE', 128))
+    
+    start_time = time.time()
+    
+    # CPU-intensive task
+    result = perform_calculation()
+    
+    execution_time = time.time() - start_time
+    
+    print(f'Memory: {memory_mb}MB, Time: {execution_time:.2f}s')
+    
+    return result
+```
+
+### Cold Start Optimization
+
+Minimize cold start impact:
+
+```python
+import boto3
+import json
+
+# Initialize outside handler (runs once per container)
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('users')
+
+def lambda_handler(event, context):
+    # Handler runs for each invocation
+    user_id = event['userId']
+    
+    # Use pre-initialized resources
+    response = table.get_item(Key={'id': user_id})
+    
+    return {
+        'statusCode': 200,
+        'body': json.dumps(response.get('Item', {}))
+    }
+```
+
+### Connection Pooling
+
+Reuse database connections:
+
+```python
+import pymysql
+import os
+
+# Connection pool outside handler
+connection = None
+
+def get_connection():
+    global connection
+    if connection is None:
+        connection = pymysql.connect(
+            host=os.environ['DB_HOST'],
+            user=os.environ['DB_USER'],
+            password=os.environ['DB_PASSWORD'],
+            database=os.environ['DB_NAME'],
+            autocommit=True
+        )
+    return connection
+
+def lambda_handler(event, context):
+    conn = get_connection()
+    
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT * FROM users WHERE id = %s", (event['userId'],))
+        result = cursor.fetchone()
+    
+    return {'user': result}
+```
+
+### Provisioned Concurrency
+
+Eliminate cold starts for critical functions:
+
+```yaml
+ProvisionedConcurrencyConfig:
+  Type: AWS::Lambda::ProvisionedConcurrencyConfig
+  Properties:
+    FunctionName: !Ref CriticalFunction
+    ProvisionedConcurrencyCount: 10
+    Qualifier: !GetAtt CriticalFunction.Version
+```
+
+## Error Handling and Monitoring
+
+### Robust Error Handling
+
+```python
+import json
+import logging
+import traceback
+from botocore.exceptions import ClientError
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+def lambda_handler(event, context):
+    try:
+        # Main logic
+        result = process_event(event)
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps(result)
+        }
+        
+    except ClientError as e:
+        error_code = e.response['Error']['Code']
+        logger.error(f'AWS Client Error {error_code}: {str(e)}')
+        
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': 'AWS service error',
+                'code': error_code
+            })
+        }
+        
+    except ValueError as e:
+        logger.error(f'Validation error: {str(e)}')
+        
+        return {
+            'statusCode': 400,
+            'body': json.dumps({
+                'error': 'Invalid input',
+                'message': str(e)
+            })
+        }
+        
+    except Exception as e:
+        logger.error(f'Unexpected error: {str(e)}')
+        logger.error(traceback.format_exc())
+        
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': 'Internal server error'
+            })
+        }
+
+def process_event(event):
+    # Your business logic
+    if not event.get('required_field'):
+        raise ValueError('required_field is missing')
+    
+    return {'result': 'success'}
+```
+
+### Dead Letter Queues
+
+Handle failed executions:
+
+```yaml
+ProcessorFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    DeadLetterConfig:
+      TargetArn: !GetAtt DeadLetterQueue.Arn
+    ReservedConcurrencyCount: 100
+
+DeadLetterQueue:
+  Type: AWS::SQS::Queue
+  Properties:
+    QueueName: lambda-dlq
+    MessageRetentionPeriod: 1209600  # 14 days
+```
+
+### CloudWatch Monitoring
+
+```python
+import boto3
+import json
+from datetime import datetime
+
+cloudwatch = boto3.client('cloudwatch')
+
+def lambda_handler(event, context):
+    start_time = datetime.now()
+    
+    try:
+        result = process_request(event)
+        
+        # Success metric
+        put_custom_metric('ProcessedRequests', 1, 'Count')
+        
+        return result
+        
+    except Exception as e:
+        # Error metric
+        put_custom_metric('ErrorRequests', 1, 'Count')
+        raise
+        
+    finally:
+        # Duration metric
+        duration = (datetime.now() - start_time).total_seconds()
+        put_custom_metric('ProcessingDuration', duration, 'Seconds')
+
+def put_custom_metric(metric_name, value, unit):
+    cloudwatch.put_metric_data(
+        Namespace='MyApplication',
+        MetricData=[{
+            'MetricName': metric_name,
+            'Value': value,
+            'Unit': unit,
+            'Timestamp': datetime.now()
+        }]
+    )
+```
+
+## Security Best Practices
+
+### IAM Permissions
+
+Follow least privilege principle:
+
+```yaml
+LambdaExecutionRole:
+  Type: AWS::IAM::Role
+  Properties:
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+    Policies:
+      - PolicyName: LambdaPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:PutItem
+              Resource: !GetAtt UserTable.Arn
+```
+
+### Environment Variables Encryption
+
+```yaml
+SecureFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    KmsKeyArn: !GetAtt LambdaKMSKey.Arn
+    Environment:
+      Variables:
+        DB_PASSWORD: !Ref EncryptedPassword
+        API_KEY: !Ref EncryptedApiKey
+```
+
+### VPC Configuration
+
+Run Lambda in private subnets:
+
+```yaml
+VPCFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    VpcConfig:
+      SecurityGroupIds:
+        - !Ref LambdaSecurityGroup
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+```
+
+## Cost Optimization
+
+### Right-Sizing Memory
+
+```python
+# Test different memory configurations
+import time
+import os
+
+def benchmark_function():
+    memory = int(os.environ.get('AWS_LAMBDA_FUNCTION_MEMORY_SIZE'))
+    
+    start = time.time()
+    
+    # Your workload here
+    result = cpu_intensive_task()
+    
+    duration = time.time() - start
+    
+    print(f'Memory: {memory}MB, Duration: {duration:.3f}s')
+    return result
+```
+
+**Cost Analysis:**
+- 128MB @ 100ms = $0.000000208
+- 512MB @ 50ms = $0.000000417  
+- 1024MB @ 30ms = $0.000000625
+
+### Reserved Concurrency
+
+Limit concurrent executions to control costs:
+
+```yaml
+CostControlledFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    ReservedConcurrencyCount: 50  # Max 50 concurrent executions
+```
+
+## Advanced Patterns
+
+### Lambda Layers
+
+Share code and dependencies across functions:
+
+```yaml
+UtilsLayer:
+  Type: AWS::Lambda::LayerVersion
+  Properties:
+    LayerName: utils-layer
+    Description: Common utilities
+    Content:
+      S3Bucket: my-lambda-artifacts
+      S3Key: layers/utils-layer.zip
+    CompatibleRuntimes:
+      - python3.9
+      - python3.8
+
+MyFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    Layers:
+      - !Ref UtilsLayer
+```
+
+### Step Functions Integration
+
+Orchestrate complex workflows:
+
+```yaml
+StateMachine:
+  Type: AWS::StepFunctions::StateMachine
+  Properties:
+    DefinitionString: !Sub |
+      {
+        "Comment": "Process user data",
+        "StartAt": "ValidateInput",
+        "States": {
+          "ValidateInput": {
+            "Type": "Task",
+            "Resource": "${ValidateFunction.Arn}",
+            "Next": "ProcessData"
+          },
+          "ProcessData": {
+            "Type": "Task", 
+            "Resource": "${ProcessFunction.Arn}",
+            "Next": "NotifyUser"
+          },
+          "NotifyUser": {
+            "Type": "Task",
+            "Resource": "${NotifyFunction.Arn}",
+            "End": true
+          }
+        }
+      }
+```
+
+### Lambda@Edge
+
+Run code at CloudFront edge locations:
+
+```python
+def lambda_handler(event, context):
+    request = event['Records'][0]['cf']['request']
+    
+    # Modify request headers
+    request['headers']['x-custom-header'] = [
+        {'key': 'X-Custom-Header', 'value': 'Added by Lambda@Edge'}
+    ]
+    
+    # Redirect mobile users
+    user_agent = request['headers'].get('user-agent', [{}])[0].get('value', '')
+    if 'Mobile' in user_agent:
+        return {
+            'status': '302',
+            'statusDescription': 'Found',
+            'headers': {
+                'location': [{'key': 'Location', 'value': '/mobile'}]
+            }
+        }
+    
+    return request
+```
+
+## Real-World Example: Image Processing Service
+
+Let's build a complete image processing pipeline:
+
+**Architecture:**
+```
+S3 Upload → Lambda Trigger → Process Image → Store Results → Notify User
+```
+
+**1. Image Processing Function:**
+```python
+import json
+import boto3
+import urllib.parse
+from PIL import Image
+import io
+
+s3 = boto3.client('s3')
+sns = boto3.client('sns')
+
+def lambda_handler(event, context):
+    for record in event['Records']:
+        bucket = record['s3']['bucket']['name']
+        key = urllib.parse.unquote_plus(record['s3']['object']['key'])
+        
+        try:
+            # Download image from S3
+            response = s3.get_object(Bucket=bucket, Key=key)
+            image_data = response['Body'].read()
+            
+            # Process image
+            thumbnails = create_thumbnails(image_data)
+            
+            # Upload thumbnails
+            for size, thumbnail_data in thumbnails.items():
+                thumbnail_key = f'thumbnails/{size}/{key}'
+                s3.put_object(
+                    Bucket=bucket,
+                    Key=thumbnail_key,
+                    Body=thumbnail_data,
+                    ContentType='image/jpeg'
+                )
+            
+            # Notify completion
+            notify_processing_complete(key, list(thumbnails.keys()))
+            
+        except Exception as e:
+            print(f'Error processing {key}: {str(e)}')
+            notify_processing_failed(key, str(e))
+
+def create_thumbnails(image_data):
+    image = Image.open(io.BytesIO(image_data))
+    thumbnails = {}
+    
+    sizes = [(150, 150), (300, 300), (600, 600)]
+    
+    for width, height in sizes:
+        thumbnail = image.copy()
+        thumbnail.thumbnail((width, height), Image.Resampling.LANCZOS)
+        
+        # Convert to bytes
+        output = io.BytesIO()
+        thumbnail.save(output, format='JPEG', quality=85)
+        thumbnails[f'{width}x{height}'] = output.getvalue()
+    
+    return thumbnails
+
+def notify_processing_complete(original_key, thumbnail_sizes):
+    message = {
+        'status': 'completed',
+        'original': original_key,
+        'thumbnails': thumbnail_sizes
+    }
+    
+    sns.publish(
+        TopicArn='arn:aws:sns:us-east-1:123456789012:image-processing',
+        Message=json.dumps(message),
+        Subject='Image Processing Complete'
+    )
+
+def notify_processing_failed(original_key, error):
+    message = {
+        'status': 'failed',
+        'original': original_key,
+        'error': error
+    }
+    
+    sns.publish(
+        TopicArn='arn:aws:sns:us-east-1:123456789012:image-processing',
+        Message=json.dumps(message),
+        Subject='Image Processing Failed'
+    )
+```
+
+**2. Infrastructure:**
+```yaml
+ImageProcessingFunction:
+  Type: AWS::Lambda::Function
+  Properties:
+    Runtime: python3.9
+    Handler: processor.lambda_handler
+    Timeout: 300
+    MemorySize: 1024
+    Environment:
+      Variables:
+        SNS_TOPIC_ARN: !Ref NotificationTopic
+    Layers:
+      - !Ref PillowLayer
+
+ImageBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    NotificationConfiguration:
+      LambdaConfigurations:
+        - Event: s3:ObjectCreated:*
+          Function: !GetAtt ImageProcessingFunction.Arn
+          Filter:
+            S3Key:
+              Rules:
+                - Name: prefix
+                  Value: uploads/
+                - Name: suffix
+                  Value: .jpg
+```
+
+This comprehensive Lambda guide covers everything from basic concepts to advanced enterprise patterns. Practice with the examples and gradually build more complex serverless applications!

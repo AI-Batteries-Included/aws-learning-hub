@@ -1,0 +1,695 @@
+# AWS IAM Permissions
+
+Secure your AWS resources with proper identity and access management policies and best practices. Learn users, roles, policies, and security patterns.
+
+## What is AWS IAM?
+
+AWS Identity and Access Management (IAM) is a web service that helps you securely control access to AWS resources. You use IAM to control who is authenticated (signed in) and authorized (has permissions) to use resources.
+
+### Key Benefits
+- **Centralized access control** - Manage all permissions from one place
+- **Fine-grained permissions** - Control access to specific resources and actions
+- **Multi-factor authentication** - Enhanced security with MFA
+- **Integration** - Works with all AWS services
+- **No additional charge** - IAM is provided at no additional cost
+- **Compliance** - Meet regulatory and security requirements
+
+## Core Concepts
+
+### Users
+Individual people or applications that need access to AWS.
+
+**User Characteristics:**
+- **Unique name** - Within your AWS account
+- **Credentials** - Password and/or access keys
+- **Permissions** - Attached policies or group membership
+- **MFA** - Optional multi-factor authentication
+
+### Groups
+Collections of users with similar access needs.
+
+**Group Benefits:**
+- **Simplified management** - Assign permissions to groups
+- **Consistency** - Ensure similar users have same access
+- **Scalability** - Easy to manage many users
+- **Organization** - Group by role, department, or project
+
+### Roles
+Temporary credentials for AWS services or external identities.
+
+**Role Types:**
+- **Service roles** - For AWS services like EC2, Lambda
+- **Cross-account roles** - Access resources in other accounts
+- **Identity provider roles** - For federated users
+- **Instance profiles** - Roles for EC2 instances
+
+### Policies
+JSON documents that define permissions.
+
+**Policy Types:**
+- **Identity-based** - Attached to users, groups, or roles
+- **Resource-based** - Attached to resources like S3 buckets
+- **AWS managed** - Created and maintained by AWS
+- **Customer managed** - Created and maintained by you
+- **Inline** - Directly embedded in identity
+
+## Getting Started
+
+### 1. Create Your First User
+
+**Using AWS Console:**
+1. Navigate to IAM console
+2. Click "Users" → "Add user"
+3. Set username and access type
+4. Attach policies or add to groups
+5. Review and create
+
+**Using CloudFormation:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'IAM user with basic permissions'
+
+Parameters:
+  Username:
+    Type: String
+    Description: IAM username
+    Default: developer
+
+Resources:
+  # IAM user
+  DeveloperUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Ref Username
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/PowerUserAccess
+      Tags:
+        - Key: Department
+          Value: Engineering
+        - Key: Role
+          Value: Developer
+
+  # Access key for programmatic access
+  DeveloperAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref DeveloperUser
+
+  # Store access key in Secrets Manager
+  DeveloperCredentials:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${Username}-credentials'
+      Description: !Sub 'Access credentials for ${Username}'
+      SecretString: !Sub |
+        {
+          "AccessKeyId": "${DeveloperAccessKey}",
+          "SecretAccessKey": "${DeveloperAccessKey.SecretAccessKey}"
+        }
+
+Outputs:
+  UserArn:
+    Description: ARN of the created user
+    Value: !GetAtt DeveloperUser.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-UserArn'
+      
+  SecretArn:
+    Description: ARN of the credentials secret
+    Value: !Ref DeveloperCredentials
+    Export:
+      Name: !Sub '${AWS::StackName}-SecretArn'
+```
+
+### 2. Create Groups and Policies
+
+**Developer Group with Custom Policy:**
+```yaml
+# Custom policy for developers
+DeveloperPolicy:
+  Type: AWS::IAM::ManagedPolicy
+  Properties:
+    ManagedPolicyName: DeveloperPolicy
+    Description: Policy for development team
+    PolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        # Full access to development resources
+        - Effect: Allow
+          Action:
+            - 's3:*'
+            - 'lambda:*'
+            - 'apigateway:*'
+            - 'dynamodb:*'
+          Resource: '*'
+          Condition:
+            StringEquals:
+              'aws:RequestedRegion': 'us-east-1'
+        
+        # Read-only access to production
+        - Effect: Allow
+          Action:
+            - 's3:Get*'
+            - 's3:List*'
+            - 'lambda:Get*'
+            - 'lambda:List*'
+          Resource: '*'
+          Condition:
+            StringLike:
+              'aws:ResourceTag/Environment': 'production'
+        
+        # Deny dangerous actions
+        - Effect: Deny
+          Action:
+            - 'iam:Delete*'
+            - 'iam:DetachUserPolicy'
+            - 'iam:RemoveUserFromGroup'
+          Resource: '*'
+
+# Developer group
+DeveloperGroup:
+  Type: AWS::IAM::Group
+  Properties:
+    GroupName: Developers
+    ManagedPolicyArns:
+      - !Ref DeveloperPolicy
+    Path: /teams/
+```
+
+### 3. Create Service Roles
+
+**Lambda Execution Role:**
+```yaml
+# Lambda execution role
+LambdaExecutionRole:
+  Type: AWS::IAM::Role
+  Properties:
+    RoleName: LambdaExecutionRole
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+    Policies:
+      - PolicyName: DynamoDBAccess
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'dynamodb:GetItem'
+                - 'dynamodb:PutItem'
+                - 'dynamodb:Query'
+                - 'dynamodb:Scan'
+                - 'dynamodb:UpdateItem'
+                - 'dynamodb:DeleteItem'
+              Resource: !Sub 'arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/MyTable'
+
+# EC2 instance profile
+EC2InstanceRole:
+  Type: AWS::IAM::Role
+  Properties:
+    RoleName: EC2InstanceRole
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service: ec2.amazonaws.com
+          Action: sts:AssumeRole
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+    Policies:
+      - PolicyName: S3Access
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 's3:GetObject'
+                - 's3:PutObject'
+              Resource: !Sub 'arn:aws:s3:::my-app-bucket/*'
+
+EC2InstanceProfile:
+  Type: AWS::IAM::InstanceProfile
+  Properties:
+    InstanceProfileName: EC2InstanceProfile
+    Roles:
+      - !Ref EC2InstanceRole
+```
+
+## Policy Examples
+
+### S3 Bucket Access Policy
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBuckets",
+      "Effect": "Allow",
+      "Action": "s3:ListAllMyBuckets",
+      "Resource": "*"
+    },
+    {
+      "Sid": "ListObjectsInBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::my-app-bucket"
+    },
+    {
+      "Sid": "ReadWriteObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::my-app-bucket/*"
+    },
+    {
+      "Sid": "DenyPublicRead",
+      "Effect": "Deny",
+      "Action": "s3:PutObjectAcl",
+      "Resource": "arn:aws:s3:::my-app-bucket/*",
+      "Condition": {
+        "StringEquals": {
+          "s3:x-amz-acl": "public-read"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Cross-Account Access Policy
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::TRUSTED-ACCOUNT-ID:root"
+      },
+      "Action": "sts:AssumeRole",
+      "Condition": {
+        "StringEquals": {
+          "sts:ExternalId": "unique-external-id"
+        },
+        "StringLike": {
+          "aws:userid": "AIDACKCEVSQ6C2EXAMPLE:*"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Time-Based Access Policy
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "*",
+      "Resource": "*",
+      "Condition": {
+        "DateGreaterThan": {
+          "aws:CurrentTime": "2024-01-01T00:00:00Z"
+        },
+        "DateLessThan": {
+          "aws:CurrentTime": "2024-12-31T23:59:59Z"
+        },
+        "StringEquals": {
+          "aws:RequestedRegion": [
+            "us-east-1",
+            "us-west-2"
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+## Advanced IAM Patterns
+
+### Assume Role with MFA
+
+```python
+import boto3
+from botocore.exceptions import ClientError
+
+def assume_role_with_mfa(role_arn, session_name, mfa_device_arn, mfa_token):
+    """Assume role with MFA token"""
+    
+    sts_client = boto3.client('sts')
+    
+    try:
+        response = sts_client.assume_role(
+            RoleArn=role_arn,
+            RoleSessionName=session_name,
+            SerialNumber=mfa_device_arn,
+            TokenCode=mfa_token,
+            DurationSeconds=3600  # 1 hour
+        )
+        
+        credentials = response['Credentials']
+        
+        # Create session with temporary credentials
+        session = boto3.Session(
+            aws_access_key_id=credentials['AccessKeyId'],
+            aws_secret_access_key=credentials['SecretAccessKey'],
+            aws_session_token=credentials['SessionToken']
+        )
+        
+        return session
+        
+    except ClientError as e:
+        print(f"Error assuming role: {e}")
+        return None
+
+# Usage
+session = assume_role_with_mfa(
+    role_arn='arn:aws:iam::123456789012:role/AdminRole',
+    session_name='admin-session',
+    mfa_device_arn='arn:aws:iam::123456789012:mfa/username',
+    mfa_token='123456'
+)
+
+if session:
+    s3_client = session.client('s3')
+    # Use s3_client with elevated permissions
+```
+
+### Policy Evaluation Logic
+
+```python
+def evaluate_policy_access(user_policies, resource_policies, action, resource):
+    """Simplified policy evaluation logic"""
+    
+    # 1. Start with implicit DENY
+    result = 'DENY'
+    
+    # 2. Check for explicit DENY in any policy
+    for policy in user_policies + resource_policies:
+        for statement in policy.get('Statement', []):
+            if (statement.get('Effect') == 'Deny' and
+                matches_action(statement.get('Action', []), action) and
+                matches_resource(statement.get('Resource', []), resource)):
+                return 'DENY'  # Explicit DENY always wins
+    
+    # 3. Check for explicit ALLOW
+    for policy in user_policies + resource_policies:
+        for statement in policy.get('Statement', []):
+            if (statement.get('Effect') == 'Allow' and
+                matches_action(statement.get('Action', []), action) and
+                matches_resource(statement.get('Resource', []), resource)):
+                result = 'ALLOW'
+    
+    return result
+
+def matches_action(policy_actions, requested_action):
+    """Check if requested action matches policy actions"""
+    if isinstance(policy_actions, str):
+        policy_actions = [policy_actions]
+    
+    for policy_action in policy_actions:
+        if policy_action == '*' or policy_action == requested_action:
+            return True
+        if policy_action.endswith('*') and requested_action.startswith(policy_action[:-1]):
+            return True
+    
+    return False
+```
+
+### Service-Linked Roles
+
+```yaml
+# Custom service-linked role
+ServiceLinkedRole:
+  Type: AWS::IAM::ServiceLinkedRole
+  Properties:
+    AWSServiceName: elasticloadbalancing.amazonaws.com
+    Description: Allows ELB to call AWS services on your behalf
+    CustomSuffix: MyELBRole
+
+# Check if service-linked role exists
+ServiceLinkedRoleExists:
+  Type: AWS::CloudFormation::CustomResource
+  Properties:
+    ServiceToken: !GetAtt CheckServiceLinkedRoleFunction.Arn
+    RoleName: AWSServiceRoleForElasticLoadBalancing
+```
+
+## Security Best Practices
+
+### Multi-Factor Authentication
+
+```yaml
+# Require MFA for sensitive operations
+MFAPolicy:
+  Type: AWS::IAM::ManagedPolicy
+  Properties:
+    ManagedPolicyName: RequireMFA
+    Description: Require MFA for sensitive operations
+    PolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        # Allow basic read operations without MFA
+        - Effect: Allow
+          Action:
+            - 'iam:Get*'
+            - 'iam:List*'
+            - 's3:List*'
+            - 's3:Get*'
+          Resource: '*'
+        
+        # Require MFA for write operations
+        - Effect: Allow
+          Action:
+            - 's3:Put*'
+            - 's3:Delete*'
+            - 'iam:Create*'
+            - 'iam:Update*'
+            - 'iam:Delete*'
+          Resource: '*'
+          Condition:
+            Bool:
+              'aws:MultiFactorAuthPresent': 'true'
+            NumericLessThan:
+              'aws:MultiFactorAuthAge': '3600'  # 1 hour
+```
+
+### Permission Boundaries
+
+```yaml
+# Permission boundary for developers
+DeveloperBoundary:
+  Type: AWS::IAM::ManagedPolicy
+  Properties:
+    ManagedPolicyName: DeveloperBoundary
+    Description: Maximum permissions for developers
+    PolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        # Allow development actions
+        - Effect: Allow
+          Action:
+            - 's3:*'
+            - 'lambda:*'
+            - 'apigateway:*'
+            - 'dynamodb:*'
+            - 'logs:*'
+          Resource: '*'
+        
+        # Deny IAM modifications
+        - Effect: Deny
+          Action: 'iam:*'
+          Resource: '*'
+        
+        # Deny production resource access
+        - Effect: Deny
+          Action: '*'
+          Resource: '*'
+          Condition:
+            StringEquals:
+              'aws:ResourceTag/Environment': 'production'
+
+# User with permission boundary
+BoundedUser:
+  Type: AWS::IAM::User
+  Properties:
+    UserName: bounded-developer
+    PermissionsBoundary: !Ref DeveloperBoundary
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/PowerUserAccess
+```
+
+## Monitoring and Auditing
+
+### CloudTrail Integration
+
+```yaml
+# CloudTrail for API logging
+IAMCloudTrail:
+  Type: AWS::CloudTrail::Trail
+  Properties:
+    TrailName: IAM-Audit-Trail
+    S3BucketName: !Ref AuditLogBucket
+    S3KeyPrefix: iam-logs/
+    IncludeGlobalServiceEvents: true
+    IsMultiRegionTrail: true
+    EnableLogFileValidation: true
+    EventSelectors:
+      - ReadWriteType: All
+        IncludeManagementEvents: true
+        DataResources:
+          - Type: AWS::IAM::*
+            Values:
+              - '*'
+
+# CloudWatch alarm for unusual IAM activity
+UnusualIAMActivity:
+  Type: AWS::CloudWatch::Alarm
+  Properties:
+    AlarmName: Unusual-IAM-Activity
+    AlarmDescription: Detects unusual IAM activity
+    MetricName: ErrorCount
+    Namespace: CloudWatchLogs
+    Statistic: Sum
+    Period: 300
+    EvaluationPeriods: 1
+    Threshold: 5
+    ComparisonOperator: GreaterThanThreshold
+    AlarmActions:
+      - !Ref SecurityNotification
+```
+
+### Access Analyzer
+
+```yaml
+# IAM Access Analyzer
+AccessAnalyzer:
+  Type: AWS::AccessAnalyzer::Analyzer
+  Properties:
+    AnalyzerName: account-analyzer
+    Type: ACCOUNT
+    Tags:
+      - Key: Purpose
+        Value: Security-Audit
+
+# Custom resource to get Access Analyzer findings
+GetAccessAnalyzerFindings:
+  Type: AWS::CloudFormation::CustomResource
+  Properties:
+    ServiceToken: !GetAtt AccessAnalyzerFunction.Arn
+    AnalyzerArn: !GetAtt AccessAnalyzer.Arn
+```
+
+## Best Practices
+
+### Security
+- ✅ **Use IAM roles for applications** - Never embed long-term credentials
+- ✅ **Enable MFA for privileged users** - Add extra security layer
+- ✅ **Apply least privilege principle** - Grant minimum necessary permissions
+- ✅ **Use permission boundaries** - Limit maximum permissions
+- ✅ **Regular access reviews** - Audit and clean up unused permissions
+- ✅ **Monitor with CloudTrail** - Track all API calls
+
+### Operations
+- ✅ **Use AWS managed policies** - When they meet your needs
+- ✅ **Group similar users** - Simplify permission management
+- ✅ **Use meaningful names** - For policies, roles, and users
+- ✅ **Tag your resources** - For better organization and billing
+- ✅ **Automate with IaC** - Use CloudFormation or Terraform
+- ✅ **Test permissions** - Verify access works as expected
+
+### Development
+- ✅ **Use AssumeRole for cross-account** - Secure account boundaries
+- ✅ **Rotate access keys regularly** - Improve security posture  
+- ✅ **Use temporary credentials** - STS tokens when possible
+- ✅ **Validate policies** - Use IAM policy simulator
+- ✅ **Document custom policies** - Explain business logic
+- ✅ **Version control policies** - Track changes over time
+
+## Real-World Example: Multi-Environment Setup
+
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues: [dev, staging, prod]
+    Default: dev
+
+Resources:
+  # Environment-specific role
+  EnvironmentRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${Environment}-application-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: EnvironmentAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              # Full access to environment resources
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    'aws:ResourceTag/Environment': !Ref Environment
+              
+              # Read-only cross-environment access
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource: '*'
+                Condition:
+                  StringLike:
+                    'aws:ResourceTag/Environment': '*'
+
+  # Developer group for this environment
+  DeveloperGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Sub '${Environment}-developers'
+      Policies:
+        - PolicyName: EnvironmentDeveloperAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: '*'
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    'aws:ResourceTag/Environment': !Ref Environment
+              - Effect: Allow
+                Action: 'sts:AssumeRole'
+                Resource: !GetAtt EnvironmentRole.Arn
+```
+
+This comprehensive IAM guide covers everything from basic user management to advanced security patterns. Practice with the examples and build secure, scalable access controls!

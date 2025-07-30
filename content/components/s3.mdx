@@ -1,10 +1,725 @@
-# Amazon S3
+# Amazon S3 Storage
 
-*Placeholder for S3 content*
+Master Amazon S3 object storage - the foundation of most AWS architectures. Learn how to store, secure, and manage data at scale with hands-on examples and best practices.
 
-Coming soon: Complete guide to Amazon S3 storage service.
+## What is Amazon S3?
 
-## Topics to Cover
-- Bucket configuration
-- Security and permissions
-- Best practices
+Amazon Simple Storage Service (S3) is object storage built to store and retrieve any amount of data from anywhere. It's designed to deliver 99.999999999% (11 9's) durability and scales to trillions of objects worldwide.
+
+### Key Benefits
+- **Virtually unlimited capacity** - Store as much data as you need
+- **High durability** - 99.999999999% (11 9's) data durability  
+- **High availability** - 99.99% availability SLA
+- **Cost-effective** - Multiple storage classes for different use cases
+- **Security** - Comprehensive security and compliance capabilities
+- **Performance** - Low latency and high throughput
+
+## Core Concepts
+
+### Buckets
+Containers that hold your objects (files). Think of them as top-level folders.
+
+**Key Properties:**
+- **Globally unique names** - Must be unique across all AWS accounts
+- **Regional** - Created in a specific AWS region
+- **Unlimited objects** - No limit on number of objects stored
+- **Flat structure** - No true folder hierarchy (simulated with prefixes)
+
+```bash
+# Create a bucket
+aws s3 mb s3://my-unique-bucket-name-2024
+
+# List buckets
+aws s3 ls
+```
+
+### Objects
+Individual files stored in buckets. Can be any type of file up to 5TB.
+
+**Object Components:**
+- **Key** - Object name (including "path")
+- **Value** - Object data (the file content)
+- **Metadata** - Key-value pairs describing the object
+- **Version ID** - For versioned objects
+- **Access Control** - Permissions for the object
+
+```bash
+# Upload object
+aws s3 cp file.txt s3://my-bucket/folder/file.txt
+
+# Download object
+aws s3 cp s3://my-bucket/folder/file.txt ./downloaded-file.txt
+
+# List objects
+aws s3 ls s3://my-bucket/ --recursive
+```
+
+### Storage Classes
+Different storage options optimized for different use cases and costs.
+
+| Storage Class | Use Case | Retrieval Time | Cost |
+|---------------|----------|----------------|------|
+| **Standard** | Frequently accessed data | Immediate | Higher |
+| **Intelligent-Tiering** | Unknown/changing access patterns | Immediate | Automatic optimization |
+| **Standard-IA** | Infrequently accessed data | Immediate | Lower storage, retrieval fee |
+| **One Zone-IA** | Non-critical, infrequent access | Immediate | Lowest immediate access |
+| **Glacier Instant** | Archive with immediate access | Immediate | Low storage cost |
+| **Glacier Flexible** | Archive data | 1-12 hours | Very low cost |
+| **Glacier Deep Archive** | Long-term archive | 12-48 hours | Lowest cost |
+
+## Getting Started
+
+### 1. Create Your First Bucket
+
+**Using AWS Console:**
+1. Navigate to S3 console
+2. Click "Create bucket"
+3. Choose unique name and region
+4. Configure settings
+5. Click "Create bucket"
+
+**Using AWS CLI:**
+```bash
+# Create bucket
+aws s3 mb s3://my-learning-bucket-$(date +%s)
+
+# Verify creation
+aws s3 ls | grep my-learning-bucket
+```
+
+**Using CloudFormation:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Basic S3 bucket'
+
+Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-learning-bucket'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+Outputs:
+  BucketName:
+    Description: 'Name of the S3 bucket'
+    Value: !Ref MyS3Bucket
+    Export:
+      Name: !Sub '${AWS::StackName}-BucketName'
+```
+
+### 2. Upload Your First Object
+
+```bash
+# Create a test file
+echo "Hello, S3!" > hello.txt
+
+# Upload to bucket
+aws s3 cp hello.txt s3://my-learning-bucket/hello.txt
+
+# Verify upload
+aws s3 ls s3://my-learning-bucket/
+```
+
+### 3. Set Up Basic Security
+
+```bash
+# Block all public access (recommended default)
+aws s3api put-public-access-block \
+  --bucket my-learning-bucket \
+  --public-access-block-configuration \
+  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+```
+
+## Security and Permissions
+
+### Bucket Policies
+JSON-based policies that define permissions for buckets and objects.
+
+**Example: Allow CloudFront access:**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontAccess",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ABCDEFG1234567"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    }
+  ]
+}
+```
+
+**Apply bucket policy:**
+```bash
+aws s3api put-bucket-policy \
+  --bucket my-bucket \
+  --policy file://bucket-policy.json
+```
+
+### Access Control Lists (ACLs)
+Legacy method for managing access. Use IAM policies and bucket policies instead.
+
+### IAM Policies
+Control S3 access for AWS users and roles.
+
+**Example IAM policy for S3 read access:**
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion"
+      ],
+      "Resource": "arn:aws:s3:::my-bucket/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:ListBucket"
+      ],
+      "Resource": "arn:aws:s3:::my-bucket"
+    }
+  ]
+}
+```
+
+### Encryption
+
+**Server-Side Encryption (SSE):**
+- **SSE-S3** - AWS manages keys
+- **SSE-KMS** - AWS KMS manages keys  
+- **SSE-C** - Customer-provided keys
+
+```bash
+# Enable default encryption
+aws s3api put-bucket-encryption \
+  --bucket my-bucket \
+  --server-side-encryption-configuration '{
+    "Rules": [
+      {
+        "ApplyServerSideEncryptionByDefault": {
+          "SSEAlgorithm": "AES256"
+        }
+      }
+    ]
+  }'
+```
+
+**Client-Side Encryption:**
+Encrypt data before uploading to S3.
+
+```python
+import boto3
+from botocore.client import Config
+
+# Client with encryption
+s3_client = boto3.client(
+    's3',
+    config=Config(
+        s3={
+            'use_ssl': True,
+            'signature_version': 's3v4'
+        }
+    )
+)
+```
+
+## Common Use Cases
+
+### 1. Static Website Hosting
+
+Host static websites directly from S3.
+
+**Setup:**
+```bash
+# Enable static website hosting
+aws s3api put-bucket-website \
+  --bucket my-website-bucket \
+  --website-configuration '{
+    "IndexDocument": {"Suffix": "index.html"},
+    "ErrorDocument": {"Key": "error.html"}
+  }'
+
+# Upload website files
+aws s3 sync ./website-files s3://my-website-bucket/
+```
+
+**Example index.html:**
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My S3 Website</title>
+</head>
+<body>
+    <h1>Hello from S3!</h1>
+    <p>This website is hosted on Amazon S3.</p>
+</body>
+</html>
+```
+
+### 2. Data Backup and Archival
+
+```bash
+# Backup with lifecycle policy
+aws s3api put-bucket-lifecycle-configuration \
+  --bucket my-backup-bucket \
+  --lifecycle-configuration '{
+    "Rules": [
+      {
+        "ID": "BackupRule",
+        "Status": "Enabled",
+        "Filter": {"Prefix": "backups/"},
+        "Transitions": [
+          {
+            "Days": 30,
+            "StorageClass": "STANDARD_IA"
+          },
+          {
+            "Days": 90,
+            "StorageClass": "GLACIER"
+          },
+          {
+            "Days": 365,
+            "StorageClass": "DEEP_ARCHIVE"
+          }
+        ]
+      }
+    ]
+  }'
+```
+
+### 3. Data Lake Storage
+
+```bash
+# Organize data lake structure
+aws s3 sync ./raw-data s3://my-data-lake/raw/
+aws s3 sync ./processed-data s3://my-data-lake/processed/
+aws s3 sync ./analytics-results s3://my-data-lake/analytics/
+```
+
+### 4. Content Distribution
+
+Use with CloudFront for global content delivery.
+
+```yaml
+# CloudFormation template
+Resources:
+  ContentBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-content'
+      
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt ContentBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${OriginAccessIdentity}'
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+```
+
+## Advanced Features
+
+### Versioning
+Keep multiple versions of objects in the same bucket.
+
+```bash
+# Enable versioning
+aws s3api put-bucket-versioning \
+  --bucket my-bucket \
+  --versioning-configuration Status=Enabled
+
+# List object versions
+aws s3api list-object-versions --bucket my-bucket
+```
+
+### Cross-Region Replication (CRR)
+Automatically replicate objects across AWS regions.
+
+```yaml
+ReplicationConfiguration:
+  Role: !GetAtt ReplicationRole.Arn
+  Rules:
+    - Id: ReplicateToSecondaryRegion
+      Status: Enabled
+      Prefix: 'important/'
+      Destination:
+        Bucket: !Sub 'arn:aws:s3:::${DestinationBucket}'
+        StorageClass: STANDARD_IA
+```
+
+### Event Notifications
+Trigger actions when objects are created, deleted, or modified.
+
+```bash
+# Configure S3 event to trigger Lambda
+aws s3api put-bucket-notification-configuration \
+  --bucket my-bucket \
+  --notification-configuration '{
+    "LambdaConfigurations": [
+      {
+        "Id": "ProcessImage",
+        "LambdaFunctionArn": "arn:aws:lambda:us-east-1:123456789012:function:ProcessS3Image",
+        "Events": ["s3:ObjectCreated:*"],
+        "Filter": {
+          "Key": {
+            "FilterRules": [
+              {
+                "Name": "suffix",
+                "Value": ".jpg"
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }'
+```
+
+### S3 Transfer Acceleration
+Speed up uploads using CloudFront edge locations.
+
+```bash
+# Enable transfer acceleration
+aws s3api put-bucket-accelerate-configuration \
+  --bucket my-bucket \
+  --accelerate-configuration Status=Enabled
+
+# Use accelerated endpoint
+aws s3 cp large-file.zip s3://my-bucket/ \
+  --endpoint-url https://s3-accelerate.amazonaws.com
+```
+
+## Performance Optimization
+
+### Request Patterns
+- **Avoid sequential key names** - Use random prefixes for high request rates
+- **Use parallel uploads** - For large files, use multipart upload
+- **Implement retry logic** - Handle temporary failures gracefully
+
+### Multipart Upload
+For files larger than 100MB:
+
+```python
+import boto3
+from boto3.s3.transfer import TransferConfig
+
+# Configure multipart upload
+config = TransferConfig(
+    multipart_threshold=1024 * 25,  # 25MB
+    max_concurrency=10,
+    multipart_chunksize=1024 * 25,
+    use_threads=True
+)
+
+s3_client = boto3.client('s3')
+s3_client.upload_file(
+    'large-file.zip',
+    'my-bucket',
+    'large-file.zip',
+    Config=config
+)
+```
+
+### Prefix Distribution
+```bash
+# Good - random prefixes
+my-app/2024/03/15/12345678/image.jpg
+my-app/2024/03/15/87654321/image.jpg
+
+# Bad - sequential prefixes (hotspotting)
+my-app/2024/03/15/00000001/image.jpg
+my-app/2024/03/15/00000002/image.jpg
+```
+
+## Cost Optimization
+
+### 1. Choose Right Storage Class
+```bash
+# Analyze access patterns
+aws s3api get-bucket-analytics-configuration --bucket my-bucket
+
+# Set up Intelligent Tiering
+aws s3api put-bucket-intelligent-tiering-configuration \
+  --bucket my-bucket \
+  --id EntireBucket \
+  --intelligent-tiering-configuration '{
+    "Id": "EntireBucket",
+    "Status": "Enabled",
+    "Filter": {"Prefix": ""},
+    "Tierings": [
+      {
+        "Days": 90,
+        "AccessTier": "ARCHIVE_ACCESS"
+      },
+      {
+        "Days": 180,
+        "AccessTier": "DEEP_ARCHIVE_ACCESS"
+      }
+    ]
+  }'
+```
+
+### 2. Lifecycle Management
+```yaml
+LifecycleConfiguration:
+  Rules:
+    - Id: OptimizeCosts
+      Status: Enabled
+      Filter:
+        Prefix: 'logs/'
+      Transitions:
+        - Days: 30
+          StorageClass: STANDARD_IA
+        - Days: 365
+          StorageClass: GLACIER
+      Expiration:
+        Days: 2555  # 7 years
+```
+
+### 3. Delete Incomplete Multipart Uploads
+```bash
+aws s3api put-bucket-lifecycle-configuration \
+  --bucket my-bucket \
+  --lifecycle-configuration '{
+    "Rules": [
+      {
+        "ID": "CleanupIncompleteUploads",
+        "Status": "Enabled",
+        "AbortIncompleteMultipartUpload": {
+          "DaysAfterInitiation": 7
+        }
+      }
+    ]
+  }'
+```
+
+## Monitoring and Logging
+
+### CloudWatch Metrics
+Key metrics to monitor:
+- **BucketSizeBytes** - Total bucket size
+- **NumberOfObjects** - Object count
+- **AllRequests** - Total requests
+- **GetRequests** - GET requests
+- **PutRequests** - PUT requests
+
+### S3 Access Logging
+```bash
+# Enable access logging
+aws s3api put-bucket-logging \
+  --bucket my-bucket \
+  --bucket-logging-status '{
+    "LoggingEnabled": {
+      "TargetBucket": "my-access-logs-bucket",
+      "TargetPrefix": "access-logs/"
+    }
+  }'
+```
+
+### CloudTrail Integration
+Track API calls and changes:
+
+```yaml
+S3CloudTrail:
+  Type: AWS::CloudTrail::Trail
+  Properties:
+    TrailName: S3DataEvents
+    S3BucketName: !Ref LoggingBucket
+    IncludeGlobalServiceEvents: false
+    IsMultiRegionTrail: false
+    EventSelectors:
+      - ReadWriteType: All
+        IncludeManagementEvents: false
+        DataResources:
+          - Type: AWS::S3::Object
+            Values: 
+              - !Sub '${MyBucket}/*'
+```
+
+## Best Practices
+
+### Security
+- ✅ **Block public access** by default
+- ✅ **Enable encryption** at rest and in transit
+- ✅ **Use IAM policies** instead of ACLs
+- ✅ **Enable MFA Delete** for critical buckets
+- ✅ **Regular access reviews** and cleanup
+- ✅ **Use VPC endpoints** for private access
+
+### Performance  
+- ✅ **Use random key prefixes** for high request rates
+- ✅ **Implement multipart upload** for large files
+- ✅ **Use Transfer Acceleration** for global uploads
+- ✅ **Cache frequently accessed objects**
+- ✅ **Monitor request patterns** and optimize
+
+### Cost Management
+- ✅ **Use appropriate storage classes**
+- ✅ **Implement lifecycle policies**
+- ✅ **Clean up incomplete uploads**
+- ✅ **Monitor usage with Cost Explorer**
+- ✅ **Use S3 Analytics** for access patterns
+
+### Operations
+- ✅ **Enable versioning** for important data
+- ✅ **Set up cross-region replication** for DR
+- ✅ **Configure event notifications** for automation
+- ✅ **Regular backups** and disaster recovery testing
+- ✅ **Monitor with CloudWatch** and set up alerts
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Access Denied Errors:**
+```bash
+# Check bucket policy
+aws s3api get-bucket-policy --bucket my-bucket
+
+# Check IAM permissions
+aws iam get-user-policy --user-name my-user --policy-name S3Access
+
+# Check public access block
+aws s3api get-public-access-block --bucket my-bucket
+```
+
+**2. Slow Upload/Download:**
+```bash
+# Use Transfer Acceleration
+aws configure set default.s3.addressing_style virtual
+aws configure set default.s3.use_accelerate_endpoint true
+
+# Check network and retry settings
+aws configure set max_concurrent_requests 20
+aws configure set max_bandwidth 100MB/s
+```
+
+**3. High Costs:**
+```bash
+# Analyze storage class distribution
+aws s3api get-bucket-analytics-configuration --bucket my-bucket
+
+# Check for incomplete multipart uploads
+aws s3api list-multipart-uploads --bucket my-bucket
+```
+
+## Real-World Example: Photo Storage App
+
+Let's build a complete photo storage solution:
+
+**1. Infrastructure Setup:**
+```yaml
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  PhotoBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-photos'
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+            AllowedOrigins: ['*']
+            MaxAge: 3000
+      LifecycleConfiguration:
+        Rules:
+          - Id: OptimizePhotos
+            Status: Enabled
+            Transitions:
+              - Days: 30
+                StorageClass: STANDARD_IA
+              - Days: 365
+                StorageClass: GLACIER
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt ProcessPhotoFunction.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .jpg
+
+  ProcessPhotoFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: python3.9
+      Handler: index.handler
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          
+          def handler(event, context):
+              s3 = boto3.client('s3')
+              
+              for record in event['Records']:
+                  bucket = record['s3']['bucket']['name']
+                  key = record['s3']['object']['key']
+                  
+                  print(f'Processing photo: {key} in bucket: {bucket}')
+                  
+                  # Add your photo processing logic here
+                  # e.g., create thumbnails, extract metadata, etc.
+                  
+              return {'statusCode': 200}
+```
+
+**2. Upload Photo with Metadata:**
+```python
+import boto3
+from datetime import datetime
+
+s3_client = boto3.client('s3')
+
+def upload_photo(file_path, bucket_name):
+    # Generate unique key
+    timestamp = datetime.now().strftime('%Y/%m/%d/%H%M%S')
+    key = f'photos/{timestamp}/original.jpg'
+    
+    # Upload with metadata
+    s3_client.upload_file(
+        file_path,
+        bucket_name,
+        key,
+        ExtraArgs={
+            'Metadata': {
+                'uploaded-by': 'photo-app',
+                'upload-date': datetime.now().isoformat(),
+                'original-filename': os.path.basename(file_path)
+            },
+            'ContentType': 'image/jpeg'
+        }
+    )
+    
+    return f's3://{bucket_name}/{key}'
+
+# Usage
+photo_url = upload_photo('vacation.jpg', 'my-photo-bucket')
+print(f'Photo uploaded: {photo_url}')
+```
+
+This comprehensive S3 guide provides everything you need to master Amazon S3 storage, from basic concepts to advanced enterprise patterns. Practice with the examples and gradually build more complex solutions!

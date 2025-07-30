@@ -1,50 +1,51 @@
+import ComponentPageTemplate from '../../../components/ComponentPageTemplate';
+import S3StorageContent from '../../../content/components/s3-optimized.mdx';
+
 export const metadata = {
-  title: 'S3 Storage - AWS Learning Hub',
-  description: 'Learn Amazon S3 object storage and file management'
+  title: 'Amazon S3 Storage - AWS Learning Hub',
+  description: 'Master Amazon S3 object storage - the foundation of most AWS architectures. Learn storage classes, security, and best practices.'
 };
 
 export default function S3Storage() {
   return (
-    <div className="container">
-      <section className="hero-section">
-        <h1 className="hero-title">Amazon S3 Storage</h1>
-        <p className="hero-subtitle">
-          Master object storage with Amazon S3 - the foundation of most AWS architectures.
-        </p>
-      </section>
-
-      <section className="content-section">
-        <h2 className="section-title">Core Concepts</h2>
-        <div className="component-grid">
-          <div className="component-item">
-            <h3>Buckets</h3>
-            <p>Container for objects with globally unique names</p>
-          </div>
-          <div className="component-item">
-            <h3>Objects</h3>
-            <p>Files and metadata stored in buckets</p>
-          </div>
-          <div className="component-item">
-            <h3>Storage Classes</h3>
-            <p>Different tiers for cost optimization</p>
-          </div>
-          <div className="component-item">
-            <h3>Access Control</h3>
-            <p>Permissions and security policies</p>
-          </div>
-        </div>
-      </section>
-
-      <section className="content-section">
-        <h2 className="section-title">Common Use Cases</h2>
-        <ul className="feature-list">
-          <li className="feature-item">Static website hosting</li>
-          <li className="feature-item">Data backup and archival</li>
-          <li className="feature-item">Content distribution</li>
-          <li className="feature-item">Data lakes and analytics</li>
-          <li className="feature-item">Application data storage</li>
-        </ul>
-      </section>
-    </div>
+    <ComponentPageTemplate
+      title="Amazon S3 Storage"
+      subtitle="Master Amazon S3 object storage - the foundation of most AWS architectures. Learn how to store, secure, and manage data at scale."
+      difficulty="beginner"
+      estimatedTime="45 minutes"
+      category="Storage"
+      awsServices={['S3', 'IAM', 'CloudFront', 'KMS']}
+      prerequisites={[
+        {
+          title: 'AWS Basics',
+          href: '/learn/aws-basics',
+          completed: false
+        },
+        {
+          title: 'Environment Setup',
+          href: '/learn/environment-setup',
+          completed: false
+        }
+      ]}
+      nextSteps={[
+        {
+          title: 'CloudFront CDN',
+          href: '/learn/cloudfront',
+          description: 'Learn to distribute S3 content globally with CloudFront'
+        },
+        {
+          title: 'Lambda Functions',
+          href: '/learn/lambda-functions',
+          description: 'Process S3 events with serverless functions'
+        },
+        {
+          title: 'IAM Permissions',
+          href: '/learn/iam-permissions',
+          description: 'Secure your S3 buckets with proper access controls'
+        }
+      ]}
+    >
+      <S3StorageContent />
+    </ComponentPageTemplate>
   );
 }
