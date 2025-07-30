@@ -1,0 +1,85 @@
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f9ff"/>
+      <stop offset="100%" style="stop-color:#e0f2fe"/>
+    </linearGradient>
+    <linearGradient id="s3Grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0ea5e9"/>
+      <stop offset="100%" style="stop-color:#0284c7"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="400" fill="url(#bgGrad)"/>
+  
+  <!-- Title -->
+  <text x="400" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#0369a1">
+    Amazon S3 Storage
+  </text>
+  
+  <!-- S3 Bucket -->
+  <rect x="300" y="80" width="200" height="100" rx="8" fill="url(#s3Grad)" stroke="#0284c7" stroke-width="2"/>
+  <text x="400" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white">
+    S3 BUCKET
+  </text>
+  <text x="400" y="130" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="white">
+    my-app-bucket
+  </text>
+  <text x="400" y="150" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="white">
+    99.999999999% Durability
+  </text>
+  
+  <!-- Storage Classes -->
+  <text x="100" y="230" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#0369a1">
+    Storage Classes
+  </text>
+  
+  <rect x="80" y="250" width="100" height="40" rx="4" fill="#10b981"/>
+  <text x="130" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    STANDARD
+  </text>
+  
+  <rect x="200" y="250" width="100" height="40" rx="4" fill="#f59e0b"/>
+  <text x="250" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    STANDARD-IA
+  </text>
+  
+  <rect x="320" y="250" width="100" height="40" rx="4" fill="#6366f1"/>
+  <text x="370" y="275" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    GLACIER
+  </text>
+  
+  <!-- Use Cases -->
+  <text x="500" y="230" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#0369a1">
+    Use Cases
+  </text>
+  
+  <rect x="480" y="250" width="80" height="30" rx="4" fill="#ec4899"/>
+  <text x="520" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">
+    Web Apps
+  </text>
+  
+  <rect x="580" y="250" width="80" height="30" rx="4" fill="#8b5cf6"/>
+  <text x="620" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">
+    Backup
+  </text>
+  
+  <rect x="480" y="290" width="80" height="30" rx="4" fill="#06b6d4"/>
+  <text x="520" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">
+    Data Lake
+  </text>
+  
+  <rect x="580" y="290" width="80" height="30" rx="4" fill="#f97316"/>
+  <text x="620" y="310" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="white">
+    CDN Origin
+  </text>
+  
+  <!-- Key Features -->
+  <text x="100" y="350" font-family="Arial, sans-serif" font-size="12" fill="#374151">
+    • Unlimited storage • Global accessibility • 200+ AWS integrations
+  </text>
+  <text x="100" y="370" font-family="Arial, sans-serif" font-size="12" fill="#374151">
+    • Object-level permissions • Versioning • Event notifications
+  </text>
+</svg>

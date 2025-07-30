@@ -15,6 +15,8 @@ export default function Route53() {
       estimatedTime="55 minutes"
       category="Networking"
       awsServices={['Route 53', 'CloudFront', 'Application Load Balancer', 'S3', 'CloudWatch']}
+      infographicPath="/images/infographics/route53-simple.svg"
+      infographicAlt="Amazon Route 53 DNS Service Architecture and Record Types"
       prerequisites={[
         {
           title: 'AWS Basics',

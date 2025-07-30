@@ -15,6 +15,8 @@ export default function CloudFormation() {
       estimatedTime="70 minutes"
       category="Infrastructure"
       awsServices={['CloudFormation', 'IAM', 'S3', 'Lambda', 'API Gateway', 'CloudWatch']}
+      infographicPath="/images/infographics/cloudformation-simple.svg"
+      infographicAlt="AWS CloudFormation Infrastructure as Code Workflow"
       prerequisites={[
         {
           title: 'AWS Basics',

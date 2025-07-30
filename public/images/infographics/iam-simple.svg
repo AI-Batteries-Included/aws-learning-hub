@@ -1,0 +1,86 @@
+<svg width="800" height="400" viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="iamBgSimple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fef7ff"/>
+      <stop offset="100%" style="stop-color:#fdf2f8"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="400" fill="url(#iamBgSimple)"/>
+  
+  <text x="400" y="40" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" font-weight="bold" fill="#be185d">
+    AWS IAM Permissions
+  </text>
+  
+  <!-- IAM Components -->
+  <rect x="100" y="80" width="80" height="60" rx="6" fill="#ec4899"/>
+  <text x="140" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Users
+  </text>
+  <text x="140" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+    Individual
+  </text>
+  
+  <rect x="210" y="80" width="80" height="60" rx="6" fill="#db2777"/>
+  <text x="250" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Groups
+  </text>
+  <text x="250" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+    Collection
+  </text>
+  
+  <rect x="320" y="80" width="80" height="60" rx="6" fill="#be185d"/>
+  <text x="360" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Roles
+  </text>
+  <text x="360" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+    Temporary
+  </text>
+  
+  <rect x="430" y="80" width="80" height="60" rx="6" fill="#9d174d"/>
+  <text x="470" y="105" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Policies
+  </text>
+  <text x="470" y="125" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="white">
+    Rules
+  </text>
+  
+  <!-- Policy Example -->
+  <rect x="550" y="80" width="180" height="80" rx="6" fill="#f9fafb" stroke="#be185d" stroke-width="1"/>
+  <text x="560" y="100" font-family="monospace" font-size="8" fill="#374151">
+    Policy Example:
+  </text>
+  <text x="570" y="115" font-family="monospace" font-size="8" fill="#374151">
+    "Effect": "Allow"
+  </text>
+  <text x="570" y="130" font-family="monospace" font-size="8" fill="#374151">
+    "Action": "s3:GetObject"
+  </text>
+  <text x="570" y="145" font-family="monospace" font-size="8" fill="#374151">
+    "Resource": "*"
+  </text>
+  
+  <!-- Security Principles -->
+  <text x="100" y="220" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#be185d">
+    Security Principles
+  </text>
+  
+  <rect x="80" y="240" width="140" height="25" rx="4" fill="#f472b6"/>
+  <text x="150" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Least Privilege
+  </text>
+  
+  <rect x="240" y="240" width="140" height="25" rx="4" fill="#ec4899"/>
+  <text x="310" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Zero Trust
+  </text>
+  
+  <rect x="400" y="240" width="140" height="25" rx="4" fill="#db2777"/>
+  <text x="470" y="255" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="white">
+    Multi-Factor Auth
+  </text>
+  
+  <text x="100" y="350" font-family="Arial, sans-serif" font-size="12" fill="#6b7280">
+    Securely manage access to AWS services and resources
+  </text>
+</svg>

@@ -15,6 +15,8 @@ export default function CloudFront() {
       estimatedTime="50 minutes"
       category="Networking"
       awsServices={['CloudFront', 'S3', 'Route 53', 'Certificate Manager', 'WAF']}
+      infographicPath="/images/infographics/cloudfront-simple.svg"
+      infographicAlt="Amazon CloudFront CDN Global Network Architecture"
       prerequisites={[
         {
           title: 'S3 Storage',
