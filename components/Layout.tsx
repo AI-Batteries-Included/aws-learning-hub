@@ -1,5 +1,7 @@
 import Header from './Header';
 import Footer from './Footer';
+import Sidebar from './Navigation/Sidebar';
+import Breadcrumb from './Breadcrumb';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -7,11 +9,15 @@ interface LayoutProps {
 
 export default function Layout({ children }: LayoutProps) {
   return (
-    <div className="site-layout">
+    <div className="financial-layout">
       <Header />
-      <main className="main-content">
-        {children}
-      </main>
+      <div className="layout-container">
+        <Sidebar />
+        <main className="content">
+          <Breadcrumb />
+          {children}
+        </main>
+      </div>
       <Footer />
     </div>
   );

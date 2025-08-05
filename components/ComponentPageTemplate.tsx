@@ -68,9 +68,11 @@ export default function ComponentPageTemplate({
           </div>
           <div className="aws-services">
             <span className="services-label">AWS Services:</span>
-            {awsServices.map((service, index) => (
-              <span key={index} className="service-tag">{service}</span>
-            ))}
+            <div className="aws-services-tags">
+              {awsServices.map((service, index) => (
+                <span key={index} className="service-tag">{service}</span>
+              ))}
+            </div>
           </div>
         </div>
         
