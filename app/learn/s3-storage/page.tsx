@@ -51,6 +51,8 @@ export default function S3Storage() {
           description: 'Secure your S3 buckets with proper access controls'
         }
       ]}
+      pageId="s3-storage-introduction"
+      pagePath="/learn/s3-storage"
     >
       <S3StorageContent />
     </ComponentPageTemplate>
