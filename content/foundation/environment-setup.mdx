@@ -1,0 +1,241 @@
+# Environment Setup
+
+Set up your development environment with all the essential tools for AWS development. This guide covers everything from AWS CLI to IDE configuration.
+
+## Prerequisites
+
+Before diving into AWS development, you'll need these core tools installed and configured on your system.
+
+### System Requirements
+– **Operating System**: Windows 10/11, macOS, or Linux
+– **RAM**: 8GB minimum (16GB recommended)
+– **Storage**: 10GB free space
+– **Network**: Stable internet connection
+
+## Essential Tools Installation
+
+### 1. AWS CLI
+
+The AWS Command Line Interface is essential for interacting with AWS services from your terminal.
+
+**Installation:**
+
+```bash
+# Windows (using installer)
+# Download from: https://aws.amazon.com/cli/
+
+# macOS (using Homebrew)
+brew install awscli
+
+# Linux (using pip)
+pip3 install awscli
+```
+
+**Configuration:**
+```bash
+aws configure
+# Enter your AWS Access Key ID
+# Enter your AWS Secret Access Key  
+# Enter your default region (e.g., us-east-1)
+# Enter output format (json recommended)
+```
+
+### 2. Node.js and npm
+
+Required for AWS CDK, SAM CLI, and modern web development.
+
+```bash
+# Download from: https://nodejs.org/
+# Verify installation
+node --version
+npm --version
+```
+
+### 3. AWS SAM CLI
+
+For serverless application development and local testing.
+
+```bash
+# Windows/macOS/Linux
+pip3 install aws-sam-cli
+
+# Verify installation
+sam --version
+```
+
+### 4. Git
+
+Essential for version control and collaboration.
+
+```bash
+# Windows: Download from https://git-scm.com/
+# macOS: Included with Xcode or use Homebrew
+brew install git
+
+# Linux
+sudo apt-get install git  # Ubuntu/Debian
+sudo yum install git      # CentOS/RHEL
+```
+
+## IDE Setup
+
+### Visual Studio Code (Recommended)
+
+VS Code provides excellent AWS development support with extensions.
+
+**Essential Extensions:**
+– AWS Toolkit
+– CloudFormation Linter
+– YAML
+– JSON Tools
+– GitLens
+– Thunder Client (for API testing)
+
+**Configuration:**
+```json
+// settings.json
+{
+  "aws.samcli.location": "/usr/local/bin/sam",
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/awslabs/goformation/master/schema/cloudformation.schema.json": "*.template.yaml"
+  }
+}
+```
+
+## AWS Account Setup
+
+### 1. Create AWS Account
+1. Visit [aws.amazon.com](https://aws.amazon.com)
+2. Click "Create an AWS Account"
+3. Complete registration with credit card
+4. Verify phone number
+
+### 2. Set Up IAM User
+Never use root credentials for development!
+
+```bash
+# Create IAM user with programmatic access
+aws iam create-user --user-name developer
+
+# Attach necessary policies
+aws iam attach-user-policy --user-name developer --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+# Create access keys
+aws iam create-access-key --user-name developer
+```
+
+### 3. Configure AWS Profiles
+
+Set up multiple profiles for different environments:
+
+```bash
+# Default profile
+aws configure
+
+# Development profile
+aws configure --profile dev
+
+# Production profile  
+aws configure --profile prod
+```
+
+## Docker Setup
+
+Essential for local testing and containerized development.
+
+```bash
+# Download Docker Desktop from: https://www.docker.com/products/docker-desktop/
+
+# Verify installation
+docker --version
+docker-compose --version
+```
+
+## Verification Steps
+
+Test your setup with these commands:
+
+```bash
+# Test AWS CLI
+aws sts get-caller-identity
+
+# Test SAM CLI
+sam --version
+
+# Test Node.js
+node --version
+npm --version
+
+# Test Docker
+docker run hello-world
+
+# Test Git
+git --version
+```
+
+## Environment Variables
+
+Set up useful environment variables:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_PROFILE=dev
+export SAM_CLI_TELEMETRY=0
+```
+
+## Best Practices
+
+### Security
+– Never commit AWS credentials to version control
+– Use IAM roles when possible
+– Enable MFA on your AWS account
+– Regularly rotate access keys
+
+### Organization
+– Use consistent naming conventions
+– Organize projects in dedicated directories
+– Use .gitignore templates for AWS projects
+– Document your setup and configurations
+
+### Development Workflow
+– Use separate AWS accounts for dev/staging/prod
+– Implement Infrastructure as Code (IaC)
+– Use CI/CD pipelines for deployments
+– Monitor costs regularly
+
+## Troubleshooting
+
+### Common Issues
+
+**AWS CLI not found:**
+```bash
+# Add to PATH
+export PATH=$PATH:/usr/local/bin
+```
+
+**Permission denied errors:**
+```bash
+# Check IAM permissions
+aws iam get-user
+aws iam list-attached-user-policies --user-name YOUR_USERNAME
+```
+
+**SAM build failures:**
+```bash
+# Ensure Docker is running
+docker ps
+
+# Check SAM template syntax
+sam validate
+```
+
+## Next Steps
+
+Once your environment is set up:
+1. Review [AWS Basics](./aws-basics) for fundamental concepts
+2. Complete [Architecture Overview](./architecture-overview) to understand design patterns
+3. Set up [VS Code](./vscode-setup) with AWS-specific configurations
+4. Learn [GitHub Fundamentals](./github-fundamentals) for version control
+
+Your development environment is now ready for AWS projects!
