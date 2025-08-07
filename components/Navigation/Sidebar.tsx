@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 export default function Sidebar() {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'paths', 'services']);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'services']);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => 
@@ -35,33 +35,6 @@ export default function Sidebar() {
                 </Link>
               </li>
               <li>
-                <Link href="/templates" className="sidebar-link">
-                  <span className="sidebar-icon">📄</span>
-                  <span>Templates</span>
-                </Link>
-              </li>
-              <li>
-                <Link href="/setup-guide" className="sidebar-link">
-                  <span className="sidebar-icon">⚙️</span>
-                  <span>Setup Guide</span>
-                </Link>
-              </li>
-            </ul>
-          )}
-        </div>
-
-        {/* Learning Paths Section */}
-        <div className="sidebar-section">
-          <button 
-            className="sidebar-section-header"
-            onClick={() => toggleSection('paths')}
-          >
-            <span>Learning Paths</span>
-            <span className={`sidebar-arrow ${expandedSections.includes('paths') ? 'expanded' : ''}`}>▼</span>
-          </button>
-          {expandedSections.includes('paths') && (
-            <ul className="sidebar-list">
-              <li>
                 <Link href="/learn" className="sidebar-link">
                   <span className="sidebar-icon">📚</span>
                   <span>Understanding AWS from Zero</span>
@@ -89,13 +62,13 @@ export default function Sidebar() {
           )}
         </div>
 
-        {/* AWS Services Section */}
+        {/* AWS Product Guides Section */}
         <div className="sidebar-section">
           <button 
             className="sidebar-section-header"
             onClick={() => toggleSection('services')}
           >
-            <span>AWS Services</span>
+            <span>AWS Product Guides</span>
             <span className={`sidebar-arrow ${expandedSections.includes('services') ? 'expanded' : ''}`}>▼</span>
           </button>
           {expandedSections.includes('services') && (
