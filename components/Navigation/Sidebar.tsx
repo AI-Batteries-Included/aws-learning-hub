@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 
 export default function Sidebar() {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'paths']);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'paths', 'services']);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => 
@@ -80,9 +80,54 @@ export default function Sidebar() {
                 </Link>
               </li>
               <li>
+                <Link href="/learn/environment-setup" className="sidebar-link">
+                  <span className="sidebar-icon">🛠️</span>
+                  <span>Environment Setup</span>
+                </Link>
+              </li>
+            </ul>
+          )}
+        </div>
+
+        {/* AWS Services Section */}
+        <div className="sidebar-section">
+          <button 
+            className="sidebar-section-header"
+            onClick={() => toggleSection('services')}
+          >
+            <span>AWS Services</span>
+            <span className={`sidebar-arrow ${expandedSections.includes('services') ? 'expanded' : ''}`}>▼</span>
+          </button>
+          {expandedSections.includes('services') && (
+            <ul className="sidebar-list">
+              <li>
                 <Link href="/learn/aws-services" className="sidebar-link">
                   <span className="sidebar-icon">☁️</span>
                   <span>AWS Services</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/learn/s3-storage" className="sidebar-link">
+                  <span className="sidebar-icon">🪣</span>
+                  <span>S3 Storage</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/learn/lambda-functions" className="sidebar-link">
+                  <span className="sidebar-icon">⚡</span>
+                  <span>Lambda Functions</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/learn/cloudformation" className="sidebar-link">
+                  <span className="sidebar-icon">📋</span>
+                  <span>CloudFormation</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/learn/iam-permissions" className="sidebar-link">
+                  <span className="sidebar-icon">🔐</span>
+                  <span>IAM Permissions</span>
                 </Link>
               </li>
             </ul>

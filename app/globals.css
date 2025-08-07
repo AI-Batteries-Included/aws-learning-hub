@@ -869,7 +869,7 @@ a:hover {
 
 /* Hero Section */
 .hero-section {
-  text-align: center;
+  text-align: left;
   padding: 3rem 0;
   margin-bottom: 2rem;
   width: 100%;
@@ -1707,7 +1707,8 @@ a:hover {
   padding-left: 0;
   line-height: 1.7;
   text-align: center;
-  list-style: none;
+  list-style: none !important;
+  list-style-type: none !important;
 }
 
 .mdx-content ol li,
@@ -1715,15 +1716,22 @@ a:hover {
   margin-bottom: 0.75rem;
   padding-left: 0;
   text-align: center;
-  position: relative;
+  list-style: none !important;
+  list-style-type: none !important;
 }
 
-.mdx-content ul li::before {
-  content: "–";
-  position: absolute;
-  left: -1.5rem;
-  color: var(--accent);
-  font-weight: bold;
+.mdx-content ol {
+  list-style-type: none !important;
+}
+
+.mdx-content ul {
+  list-style-type: none !important;
+}
+
+.mdx-content ol li::marker,
+.mdx-content ul li::marker {
+  display: none !important;
+  content: none !important;
 }
 
 .mdx-content ol li::before {

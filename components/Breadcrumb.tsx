@@ -33,6 +33,7 @@ export default function Breadcrumb() {
       if (segment === 'aws-basics') label = 'AWS Basics';
       if (segment === 'architecture-overview') label = 'Architecture Overview';
       if (segment === 'aws-services') label = 'AWS Services';
+      if (segment === 'environment-setup') label = 'Environment Setup';
       if (segment === 'claude-code-setup') label = 'Claude Code Setup';
       if (segment === 'github-fundamentals') label = 'GitHub Fundamentals';
       if (segment === 'vscode-setup') label = 'VSCode Setup';
