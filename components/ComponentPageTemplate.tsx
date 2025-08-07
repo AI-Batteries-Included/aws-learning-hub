@@ -1,7 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import Breadcrumb from './Breadcrumb';
 
 interface Prerequisite {
   title: string;
@@ -54,8 +53,6 @@ export default function ComponentPageTemplate({
 
   return (
     <div className="container">
-      <Breadcrumb />
-      
       {/* Hero Section */}
       <section className="hero-section">
         <div className="component-meta">
