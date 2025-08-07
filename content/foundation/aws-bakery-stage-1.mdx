@@ -1,0 +1,103 @@
+# Stage 1: Home Kitchen
+## Conceptualizing the Website (Local Development)
+
+<StageHeader 
+  icon="🏠" 
+  bakeryTitle="Tinkering with Recipes at Home"
+  techTitle="Writing Code, Testing, and Making Changes Locally"
+/>
+
+You start in your cozy home kitchen, experimenting with different peach cobbler recipes. You write down ideas, test them in your kitchen, then make changes based on what works and what doesn't. The process is intimate and iterative - you can quickly adjust ingredients, try new techniques, and taste-test immediately.
+
+<BakeryCard 
+  bakeryContent="You write recipe notes, test ingredients, adjust measurements, and refine your technique through trial and error in your familiar kitchen space."
+  techContent="Developers write code on their local machines, run development servers (localhost:3000), test features, debug issues, and iterate quickly in their familiar development environment."
+/>
+
+## Making It Readable and Standardized
+
+After perfecting your recipe, you ensure it's properly formatted and readable. You want other people to see it and immediately recognize "oh, this is a recipe!" - following standard recipe conventions that everyone understands.
+
+### Your Recipe Format
+```
+Your Peach Cobbler Recipe
+
+Ingredients:
+– 6 fresh peaches, sliced
+– 1 cup sugar  
+– 1 cup flour
+– 1 stick butter
+
+Instructions:
+1. Preheat oven to 375°F
+2. Mix dry ingredients...
+3. Add peaches and bake for 45 minutes
+```
+
+### The Technical Parallel
+This mirrors how developers use standardized technologies:
+
+```javascript
+// Using HTML, CSS, React as standardized ways 
+// of creating readable documents
+import React from 'react'
+
+export default function PeachCobblerPage() {
+  return (
+    <div className="recipe-container">
+      <h1>Your Peach Cobbler</h1>
+      <IngredientsList />
+      <Instructions />
+    </div>
+  )
+}
+```
+
+## Why This Stage Matters
+
+Just as recipes follow standard formats, websites use standard technologies (HTML, CSS, JavaScript) to ensure they're universally readable and functional.
+
+**Key Benefits of Local Development:**
+– Complete control over the development environment
+– Instant feedback and rapid iteration
+– No external dependencies or costs
+– Perfect for experimentation and learning
+
+**Limitations:**
+– Only accessible on your local machine
+– Can't share with others easily
+– Not suitable for production use
+
+## What You Learn
+
+By the end of this stage, you have:
+– Perfected your peach cobbler recipe through testing
+– Documented it in a standard, readable format
+– Built confidence in your core product
+– Prepared for the next challenge: sharing it with others
+
+## Technical Skills Gained
+
+In this stage, developers master:
+– Setting up local development environments
+– Using standard web technologies (HTML, CSS, JavaScript)
+– Testing and debugging locally
+– Following coding conventions and best practices
+
+---
+
+## Ready for the Next Challenge?
+
+Your recipe is perfect, but it's trapped in your kitchen. How can you share it with others in town who want to try making it themselves?
+
+<div style={{textAlign: 'center', margin: '2rem 0'}}>
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '500px', margin: '0 auto'}}>
+    <a href="../" style={{color: 'var(--accent)', textDecoration: 'none', fontWeight: '600'}}>
+      ← Back to Overview
+    </a>
+    
+    <a href="./stage-2" style={{display: 'inline-block', background: 'linear-gradient(45deg, var(--accent), var(--link-blue))', color: 'white', padding: '1rem 2rem', borderRadius: '25px', textDecoration: 'none', fontWeight: '600'}}>
+      📚 Stage 2: Recipe Library →
+    </a>
+  </div>
+</div>

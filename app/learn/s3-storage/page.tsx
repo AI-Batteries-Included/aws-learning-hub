@@ -25,11 +25,16 @@ export default function S3Storage() {
         },
         {
           title: 'Environment Setup',
-          href: '/learn/environment-setup',
+          href: '/setup-guide',
           completed: false
         }
       ]}
       nextSteps={[
+        {
+          title: 'Back to AWS Services',
+          href: '/learn/aws-services',
+          description: 'Explore other AWS services and their use cases'
+        },
         {
           title: 'CloudFront CDN',
           href: '/learn/cloudfront',

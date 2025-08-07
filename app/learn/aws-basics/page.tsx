@@ -21,7 +21,7 @@ export default function AWSBasics() {
       nextSteps={[
         {
           title: 'Environment Setup',
-          href: '/learn/environment-setup',
+          href: '/setup-guide',
           description: 'Configure your development environment'
         },
         {

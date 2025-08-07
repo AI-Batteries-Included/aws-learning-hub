@@ -25,7 +25,7 @@ export default function IAMPermissions() {
         },
         {
           title: 'Environment Setup',
-          href: '/learn/environment-setup',
+          href: '/setup-guide',
           completed: false
         }
       ]}

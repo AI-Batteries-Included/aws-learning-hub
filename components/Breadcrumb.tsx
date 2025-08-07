@@ -32,7 +32,7 @@ export default function Breadcrumb() {
       if (segment === 'setup-guide') label = 'Setup Guide';
       if (segment === 'aws-basics') label = 'AWS Basics';
       if (segment === 'architecture-overview') label = 'Architecture Overview';
-      if (segment === 'environment-setup') label = 'Environment Setup';
+      if (segment === 'aws-services') label = 'AWS Services';
       if (segment === 'claude-code-setup') label = 'Claude Code Setup';
       if (segment === 'github-fundamentals') label = 'GitHub Fundamentals';
       if (segment === 'vscode-setup') label = 'VSCode Setup';
@@ -41,6 +41,8 @@ export default function Breadcrumb() {
       if (segment === 'iam-permissions') label = 'IAM Permissions';
       if (segment === 'ses-email') label = 'SES Email';
       if (segment === 'route-53') label = 'Route 53';
+      if (segment === 'cloudformation') label = 'CloudFormation';
+      if (segment === 'cloudfront') label = 'CloudFront';
       
       breadcrumbs.push({
         label,

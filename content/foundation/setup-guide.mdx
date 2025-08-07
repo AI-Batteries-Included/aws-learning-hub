@@ -1,0 +1,412 @@
+# Complete AWS Setup Guide
+
+Your comprehensive resource for setting up your AWS account, development environment, and essential tools. Follow this guide to go from zero to ready for AWS development.
+
+## Prerequisites
+
+Before diving into AWS development, ensure your system meets these requirements:
+
+### System Requirements
+– **Operating System**: Windows 10/11, macOS, or Linux
+– **RAM**: 8GB minimum (16GB recommended)
+– **Storage**: 10GB free space for tools and projects
+– **Network**: Stable internet connection for downloads and AWS access
+
+---
+
+## Part 1: AWS Account Setup
+
+### 1. Create Your AWS Account
+
+**Step-by-Step Account Creation:**
+1. Visit [aws.amazon.com](https://aws.amazon.com)
+2. Click "Create an AWS Account"
+3. Enter your email address and choose a password
+4. Provide billing information (credit card required)
+5. Verify your phone number with SMS or voice call
+6. Choose your support plan (Basic Plan is free)
+
+### 2. Secure Your Root Account
+
+**Critical Security Steps:**
+```bash
+# Enable Multi-Factor Authentication (MFA) on root account
+# 1. Sign in to AWS Management Console as root
+# 2. Navigate to "My Security Credentials"
+# 3. Enable MFA using authenticator app (recommended)
+```
+
+**Important:** Never use root credentials for daily development work!
+
+### 3. Create IAM User for Development
+
+Create a dedicated IAM user for all development activities:
+
+```bash
+# Using AWS CLI (after initial setup)
+aws iam create-user --user-name aws-developer
+
+# Attach administrative permissions for learning
+aws iam attach-user-policy \
+  --user-name aws-developer \
+  --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+
+# Create access keys for programmatic access
+aws iam create-access-key --user-name aws-developer
+```
+
+### 4. Set Up Billing Alerts
+
+**Protect yourself from unexpected charges:**
+1. Go to AWS Billing Dashboard
+2. Navigate to "Budgets"
+3. Create a budget for $10-50 (adjust to your comfort level)
+4. Set up email alerts at 80% and 100% of budget
+5. Enable billing alerts in CloudWatch
+
+### 5. Understand AWS Free Tier
+
+**Free Tier Highlights:**
+– **EC2**: 750 hours per month of t2.micro instances
+– **S3**: 5 GB of standard storage
+– **Lambda**: 1 million requests per month
+– **RDS**: 750 hours of db.t2.micro database usage
+– **CloudFormation**: No additional charges for templates
+
+---
+
+## Part 2: Essential Development Tools
+
+### 1. AWS CLI Installation
+
+The AWS Command Line Interface is your primary tool for interacting with AWS services.
+
+**Installation by Platform:**
+
+```bash
+# Windows (using installer)
+# Download from: https://aws.amazon.com/cli/
+
+# macOS (using Homebrew)
+brew install awscli
+
+# Linux (using pip)
+pip3 install awscli --user
+
+# Verify installation
+aws --version
+```
+
+**Initial Configuration:**
+```bash
+aws configure
+# AWS Access Key ID: [Enter your access key]
+# AWS Secret Access Key: [Enter your secret key]
+# Default region name: us-east-1
+# Default output format: json
+```
+
+### 2. Node.js and npm
+
+Required for modern web development and AWS tools like CDK.
+
+```bash
+# Download from: https://nodejs.org/ (LTS version recommended)
+
+# Verify installation
+node --version  # Should show v18+ or v20+
+npm --version   # Should show 8+ or 9+
+```
+
+### 3. AWS SAM CLI
+
+For serverless application development and local testing.
+
+```bash
+# Installation (requires Python 3.7+)
+pip3 install aws-sam-cli
+
+# Verify installation
+sam --version
+
+# Alternative: Download installer from AWS documentation
+```
+
+### 4. Git Version Control
+
+Essential for managing your code and collaborating.
+
+```bash
+# Windows: Download from https://git-scm.com/
+# macOS: Included with Xcode or use Homebrew
+brew install git
+
+# Linux
+sudo apt-get install git  # Ubuntu/Debian
+sudo yum install git      # CentOS/RHEL
+
+# Configure Git
+git config --global user.name "Your Name"
+git config --global user.email "your.email@example.com"
+```
+
+### 5. Docker (Optional but Recommended)
+
+For containerized development and local AWS service testing.
+
+```bash
+# Download Docker Desktop from: https://www.docker.com/products/docker-desktop/
+
+# Verify installation
+docker --version
+docker-compose --version
+
+# Test installation
+docker run hello-world
+```
+
+---
+
+## Part 3: IDE Setup
+
+### Visual Studio Code (Recommended)
+
+VS Code provides excellent AWS development support.
+
+**Essential Extensions:**
+– **AWS Toolkit**: Official AWS extension for resource management
+– **CloudFormation Linter**: Validates CloudFormation templates
+– **YAML**: Syntax highlighting for YAML files
+– **JSON Tools**: Enhanced JSON editing
+– **GitLens**: Advanced Git integration
+– **Thunder Client**: API testing tool
+
+**VS Code Configuration for AWS:**
+
+```json
+// settings.json
+{
+  "aws.samcli.location": "/usr/local/bin/sam",
+  "yaml.schemas": {
+    "https://raw.githubusercontent.com/awslabs/goformation/master/schema/cloudformation.schema.json": "*.template.yaml"
+  },
+  "files.associations": {
+    "*.template": "yaml",
+    "*.sam": "yaml"
+  }
+}
+```
+
+---
+
+## Part 4: Advanced Configuration
+
+### AWS Profiles Setup
+
+Configure multiple profiles for different environments:
+
+```bash
+# Default profile (development)
+aws configure
+
+# Create staging profile
+aws configure --profile staging
+
+# Create production profile  
+aws configure --profile production
+
+# Use specific profile
+aws s3 ls --profile production
+export AWS_PROFILE=staging  # Set for session
+```
+
+### Environment Variables
+
+Set up useful environment variables in your shell profile:
+
+```bash
+# Add to ~/.bashrc, ~/.zshrc, or ~/.bash_profile
+export AWS_DEFAULT_REGION=us-east-1
+export AWS_PROFILE=development
+export SAM_CLI_TELEMETRY=0  # Disable telemetry
+```
+
+### GitHub SSH Setup
+
+Configure SSH keys for seamless GitHub integration:
+
+```bash
+# Generate SSH key
+ssh-keygen -t ed25519 -C "your.email@example.com"
+
+# Add to SSH agent
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519
+
+# Copy public key to clipboard (macOS)
+pbcopy < ~/.ssh/id_ed25519.pub
+
+# Add the public key to your GitHub account
+# Go to GitHub > Settings > SSH and GPG keys > New SSH key
+```
+
+---
+
+## Part 5: Verification & Testing
+
+### Test Your Complete Setup
+
+Run these commands to verify everything is working:
+
+```bash
+# Test AWS CLI and credentials
+aws sts get-caller-identity
+
+# Test AWS services access
+aws s3 ls  # Should show your buckets (if any)
+
+# Test SAM CLI
+sam --version
+
+# Test Node.js and npm
+node --version && npm --version
+
+# Test Docker (if installed)
+docker run hello-world
+
+# Test Git
+git --version
+
+# Create a test SAM application
+sam init --runtime nodejs18.x --name test-app
+```
+
+---
+
+## Part 6: Security Best Practices
+
+### Credential Security
+– **Never commit AWS credentials to version control**
+– **Use IAM roles when possible instead of access keys**
+– **Enable MFA on your AWS account**
+– **Regularly rotate access keys (every 90 days)**
+– **Use AWS profiles for different environments**
+
+### Development Workflow Security
+– **Use separate AWS accounts for dev/staging/production**
+– **Implement least privilege IAM policies**
+– **Enable CloudTrail for audit logging**
+– **Set up AWS Config for compliance monitoring**
+– **Use AWS Secrets Manager for sensitive data**
+
+---
+
+## Part 7: Project Organization
+
+### Recommended Directory Structure
+
+```
+aws-projects/
+├── learning/          # Practice projects
+├── templates/         # Reusable CloudFormation templates
+├── lambda-functions/  # Serverless functions
+├── websites/         # Static website projects
+└── infrastructure/   # Infrastructure as Code projects
+```
+
+### Essential .gitignore Template
+
+```gitignore
+# AWS
+.aws-sam/
+*.log
+.env
+.env.local
+
+# Node.js
+node_modules/
+npm-debug.log
+package-lock.json
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+```
+
+---
+
+## Part 8: Troubleshooting Common Issues
+
+### AWS CLI Issues
+
+**AWS CLI not found:**
+```bash
+# Add to PATH (macOS/Linux)
+export PATH=$PATH:/usr/local/bin
+
+# Windows: Add to system PATH via Environment Variables
+```
+
+**Permission denied errors:**
+```bash
+# Check IAM user permissions
+aws iam get-user
+aws iam list-attached-user-policies --user-name aws-developer
+
+# Verify credentials
+aws configure list
+```
+
+### SAM CLI Issues
+
+**SAM build failures:**
+```bash
+# Ensure Docker is running
+docker ps
+
+# Validate SAM template
+sam validate
+
+# Clean build
+sam build --use-container
+```
+
+**Permission errors:**
+```bash
+# Fix Docker permissions (Linux)
+sudo usermod -aG docker $USER
+# Log out and back in
+```
+
+---
+
+## Next Steps
+
+Your complete AWS development environment is now ready! Continue your journey:
+
+1. **Start Learning**: [AWS Bakery Analogy](./aws-bakery-analogy) - Learn AWS through storytelling
+2. **Core Concepts**: [AWS Basics](./aws-basics) - Understand fundamental AWS concepts
+3. **Architecture**: [Architecture Overview](./architecture-overview) - Learn design patterns
+4. **Version Control**: [GitHub Fundamentals](./github-fundamentals) - Master Git workflows
+5. **Hands-On Practice**: Choose an [AWS Service](../learn) to explore
+
+## Quick Reference Commands
+
+```bash
+# Daily AWS commands
+aws sts get-caller-identity    # Check current user
+aws s3 ls                      # List S3 buckets
+sam local start-api            # Test API Gateway locally
+sam deploy --guided            # Deploy SAM applications
+
+# Project setup
+sam init                       # Create new SAM project
+git init && git add .          # Initialize version control
+aws cloudformation create-stack # Deploy infrastructure
+```
+
+**Congratulations!** You're now equipped with a professional AWS development environment. Time to start building! 🚀

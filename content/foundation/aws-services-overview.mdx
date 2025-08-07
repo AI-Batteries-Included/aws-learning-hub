@@ -1,0 +1,192 @@
+# AWS Services Overview
+
+Explore the comprehensive suite of AWS services that power modern cloud applications. Each service is designed to solve specific challenges and can be combined to build scalable, reliable, and cost-effective solutions.
+
+## 🗄️ Storage Services
+
+### Amazon S3 (Simple Storage Service)
+**Object storage for any amount of data from anywhere**
+
+S3 provides industry-leading scalability, data availability, security, and performance. Store and retrieve any amount of data from anywhere on the web.
+
+**Key Features:**
+– 99.999999999% (11 9's) of data durability
+– Multiple storage classes for different use cases
+– Built-in security and compliance capabilities
+– Lifecycle management for automatic cost optimization
+
+**[Explore S3 Storage →](./s3-storage)**
+
+---
+
+## ⚡ Compute Services
+
+### AWS Lambda
+**Run code without thinking about servers**
+
+Lambda lets you run code without provisioning or managing servers. You pay only for the compute time you consume—there's no charge when your code isn't running.
+
+**Key Features:**
+– Automatic scaling from zero to thousands of requests per second
+– Pay per request and duration
+– Supports multiple programming languages
+– Built-in security and monitoring
+
+**[Explore Lambda Functions →](./lambda-functions)**
+
+---
+
+## 🌐 Networking & Content Delivery
+
+### Amazon Route 53
+**Scalable domain name system (DNS) web service**
+
+Route 53 effectively connects user requests to infrastructure running in AWS—such as Amazon EC2 instances, Elastic Load Balancers, or Amazon S3 buckets.
+
+**Key Features:**
+– Highly available and scalable DNS
+– Domain registration
+– Health checks and DNS failover
+– Traffic flow management
+
+**[Explore Route 53 →](./route-53)**
+
+### Amazon CloudFront
+**Global content delivery network (CDN)**
+
+CloudFront is a fast content delivery network service that securely delivers data, videos, applications, and APIs to customers globally with low latency and high transfer speeds.
+
+**Key Features:**
+– 400+ global edge locations
+– DDoS protection and security features
+– Real-time metrics and logging
+– Integration with other AWS services
+
+**[Explore CloudFront →](./cloudfront)**
+
+---
+
+## 🔐 Security & Identity Services
+
+### AWS IAM (Identity and Access Management)
+**Securely manage access to AWS services and resources**
+
+IAM enables you to manage access to AWS services and resources securely. You can create and manage AWS users and groups and use permissions to allow and deny their access.
+
+**Key Features:**
+– Fine-grained access controls
+– Multi-factor authentication (MFA)
+– Integration with corporate directories
+– No additional charges
+
+**[Explore IAM Permissions →](./iam-permissions)**
+
+---
+
+## 🏗️ Infrastructure & Deployment
+
+### AWS CloudFormation
+**Infrastructure as Code**
+
+CloudFormation gives developers and businesses an easy way to create a collection of related AWS resources and provision them in an orderly and predictable fashion.
+
+**Key Features:**
+– Template-based infrastructure provisioning
+– Stack management and rollback capabilities
+– Change sets for preview
+– Cross-region resource deployment
+
+**[Explore CloudFormation →](./cloudformation)**
+
+---
+
+## 📧 Communication Services
+
+### Amazon SES (Simple Email Service)
+**Reliable, scalable email service**
+
+SES is a cost-effective, flexible, and scalable email service that enables developers to send mail from within any application.
+
+**Key Features:**
+– High deliverability rates
+– Flexible IP deployment and authentication
+– Real-time access to reputation and delivery metrics
+– Built-in security features
+
+**[Explore SES Email →](./ses-email)**
+
+---
+
+## 🔧 Developer Tools
+
+### AWS CodeBuild, CodeDeploy, CodePipeline
+**Complete CI/CD pipeline services**
+
+Build, test, and deploy your applications with AWS developer tools designed for continuous integration and continuous deployment.
+
+### AWS Cloud9
+**Cloud-based integrated development environment**
+
+Write, run, and debug code with just a browser using this cloud IDE.
+
+---
+
+## 📊 Monitoring & Management
+
+### Amazon CloudWatch
+**Monitoring and observability service**
+
+CloudWatch provides data and actionable insights to monitor your applications, respond to system-wide performance changes, and optimize resource utilization.
+
+### AWS CloudTrail
+**Track user activity and API usage**
+
+CloudTrail enables governance, compliance, operational auditing, and risk auditing of your AWS account.
+
+---
+
+## 🚀 Getting Started Recommendations
+
+### For Beginners
+1. **Start with [S3 Storage](./s3-storage)** - Learn object storage fundamentals
+2. **Try [Lambda Functions](./lambda-functions)** - Experience serverless computing
+3. **Explore [IAM Permissions](./iam-permissions)** - Understand AWS security
+
+### For Web Applications
+1. **[S3 Storage](./s3-storage)** - Host static websites and assets
+2. **[CloudFront](./cloudfront)** - Global content delivery
+3. **[Route 53](./route-53)** - DNS and domain management
+4. **[Lambda Functions](./lambda-functions)** - Backend API logic
+
+### For Infrastructure Management
+1. **[CloudFormation](./cloudformation)** - Infrastructure as Code
+2. **[IAM Permissions](./iam-permissions)** - Security and access control
+3. **[Lambda Functions](./lambda-functions)** - Automation and monitoring
+
+---
+
+## 🎯 Architecture Patterns
+
+Understanding how these services work together is key to building robust applications:
+
+### Static Website Pattern
+**S3** (hosting) + **CloudFront** (CDN) + **Route 53** (DNS)
+
+### Serverless Application Pattern  
+**Lambda** (compute) + **API Gateway** (API) + **S3** (storage) + **IAM** (security)
+
+### Full-Stack Application Pattern
+**EC2/Lambda** (compute) + **RDS** (database) + **S3** (storage) + **CloudFront** (CDN) + **Route 53** (DNS)
+
+---
+
+## 📚 Additional Resources
+
+– **[AWS Free Tier](https://aws.amazon.com/free/)** - Try services at no charge
+– **[AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)** - Best practices
+– **[AWS Solutions Library](https://aws.amazon.com/solutions/)** - Pre-built solutions
+– **[AWS Training and Certification](https://aws.amazon.com/training/)** - Official learning paths
+
+---
+
+Ready to dive deeper into specific services? Choose a service above to explore detailed guides, tutorials, and best practices!

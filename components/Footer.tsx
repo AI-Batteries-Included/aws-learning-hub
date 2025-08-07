@@ -13,7 +13,7 @@ export default function Footer() {
             <h4>Learning</h4>
             <ul>
               <li><Link href="/learn">All Courses</Link></li>
-              <li><Link href="/learn/environment-setup">Environment Setup</Link></li>
+              <li><Link href="/setup-guide">Environment Setup</Link></li>
               <li><Link href="/learn/s3-storage">S3 Storage</Link></li>
               <li><Link href="/learn/lambda-functions">Lambda Functions</Link></li>
             </ul>

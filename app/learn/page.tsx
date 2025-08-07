@@ -1,3 +1,5 @@
+import FoundationCard from '../../components/FoundationCard';
+
 export const metadata = {
   title: 'Learn - AWS Learning Hub',
   description: 'Comprehensive AWS learning resources organized by foundation and components'
@@ -19,14 +21,24 @@ export default function LearnHub() {
           Start with the essentials. Build a solid foundation before diving into specific AWS services.
         </p>
         <div className="component-grid">
-          <div className="component-item">
-            <h3>Environment Setup</h3>
-            <p>Configure your development environment for AWS projects</p>
-          </div>
-          <div className="component-item">
-            <h3>Architecture Overview</h3>
-            <p>Understand AWS architectural patterns and best practices</p>
-          </div>
+          <FoundationCard
+            title="AWS Bakery Analogy"
+            description="Learn AWS through the story of a baker scaling from home kitchen to global distribution"
+            href="/learn/aws-bakery-analogy"
+            icon="🥖"
+          />
+          <FoundationCard
+            title="Complete Setup Guide"
+            description="Configure your AWS account and development environment"
+            href="/setup-guide"
+            icon="⚙️"
+          />
+          <FoundationCard
+            title="Architecture Overview"
+            description="Understand AWS architectural patterns and best practices"
+            href="/learn/architecture-overview"
+            icon="🏗️"
+          />
         </div>
       </section>
 

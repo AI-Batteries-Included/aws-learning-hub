@@ -1,4 +1,7 @@
 import type { MDXComponents } from 'mdx/types';
+import BakeryCard from '@/components/mdx/BakeryCard';
+import StageHeader from '@/components/mdx/StageHeader';
+import ServiceMapping from '@/components/mdx/ServiceMapping';
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
@@ -55,6 +58,10 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
         {children}
       </pre>
     ),
+    // Custom bakery analogy components
+    BakeryCard,
+    StageHeader,
+    ServiceMapping,
     ...components,
   };
 }
