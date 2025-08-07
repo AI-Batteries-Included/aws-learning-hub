@@ -21,9 +21,9 @@ export default function MainNav() {
           description: 'Core concepts'
         },
         {
-          title: 'Environment Setup',
-          href: '/learn/environment-setup',
-          description: 'Dev setup'
+          title: 'Complete Setup Guide',
+          href: '/setup-guide',
+          description: 'Complete setup'
         },
         {
           title: 'VS Code Setup',

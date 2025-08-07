@@ -1,0 +1,124 @@
+.stageHeader {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin: 3rem 0 2rem 0;
+  padding: 2rem;
+  background: var(--light-gray);
+  border-radius: 16px;
+  border-left: 6px solid var(--accent);
+  box-shadow: var(--shadow-light);
+}
+
+.iconContainer {
+  flex-shrink: 0;
+}
+
+.stageIcon {
+  font-size: 4rem;
+  line-height: 1;
+  display: block;
+  text-align: center;
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 50%;
+  box-shadow: var(--shadow-light);
+  border: 3px solid var(--accent);
+}
+
+.titleContainer {
+  flex: 1;
+}
+
+.titlePair {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bakeryTitle,
+.techTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.4;
+}
+
+.bakeryTitle {
+  background: rgba(255, 107, 53, 0.1);
+  border-left: 4px solid #ff6b35;
+  color: var(--foreground);
+}
+
+.techTitle {
+  background: rgba(33, 150, 243, 0.1);
+  border-left: 4px solid var(--link-blue);
+  color: var(--foreground);
+}
+
+.titleIcon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.titleText {
+  flex: 1;
+}
+
+.arrow {
+  align-self: center;
+  font-size: 1.5rem;
+  color: var(--accent);
+  font-weight: bold;
+  margin: 0.5rem 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .stageHeader {
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  .stageIcon {
+    font-size: 3rem;
+    padding: 0.8rem;
+  }
+  
+  .bakeryTitle,
+  .techTitle {
+    font-size: 1rem;
+    padding: 0.8rem 1rem;
+    text-align: left;
+  }
+  
+  .titleIcon {
+    font-size: 1.3rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .stageHeader {
+    background: var(--section-bg);
+  }
+  
+  .stageIcon {
+    background: var(--background);
+  }
+  
+  .bakeryTitle {
+    background: rgba(255, 107, 53, 0.15);
+  }
+  
+  .techTitle {
+    background: rgba(33, 150, 243, 0.15);
+  }
+}

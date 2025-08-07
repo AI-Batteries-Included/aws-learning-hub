@@ -20,7 +20,7 @@ export default function GitHubFundamentals() {
       prerequisites={[
         {
           title: 'Environment Setup',
-          href: '/learn/environment-setup',
+          href: '/setup-guide',
           completed: false
         }
       ]}

@@ -1,0 +1,78 @@
+.bakeryCard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--light-gray);
+  border-radius: 12px;
+  border-left: 4px solid var(--accent);
+  box-shadow: var(--shadow-light);
+}
+
+.cardSection {
+  padding: 1rem;
+  background: var(--background);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.cardContent {
+  margin: 0;
+  line-height: 1.6;
+  color: var(--foreground);
+  font-size: 0.95rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .bakeryCard {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .cardSection {
+    padding: 0.8rem;
+  }
+  
+  .cardTitle {
+    font-size: 1rem;
+  }
+  
+  .cardContent {
+    font-size: 0.9rem;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .bakeryCard {
+    background: var(--section-bg);
+  }
+  
+  .cardSection {
+    background: var(--background);
+    border-color: var(--border);
+  }
+}

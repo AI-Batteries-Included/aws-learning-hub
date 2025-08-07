@@ -35,12 +35,6 @@ export default function Sidebar() {
                 </Link>
               </li>
               <li>
-                <Link href="/learn" className="sidebar-link">
-                  <span className="sidebar-icon">📚</span>
-                  <span>AWS Learning</span>
-                </Link>
-              </li>
-              <li>
                 <Link href="/templates" className="sidebar-link">
                   <span className="sidebar-icon">📄</span>
                   <span>Templates</span>
@@ -68,9 +62,15 @@ export default function Sidebar() {
           {expandedSections.includes('paths') && (
             <ul className="sidebar-list">
               <li>
+                <Link href="/learn" className="sidebar-link">
+                  <span className="sidebar-icon">📚</span>
+                  <span>Understanding AWS from Zero</span>
+                </Link>
+              </li>
+              <li>
                 <Link href="/learn/aws-basics" className="sidebar-link">
                   <span className="sidebar-icon">🔰</span>
-                  <span>AWS Basics</span>
+                  <span>Using AWS Products</span>
                 </Link>
               </li>
               <li>
@@ -100,6 +100,12 @@ export default function Sidebar() {
           </button>
           {expandedSections.includes('services') && (
             <ul className="sidebar-list">
+              <li>
+                <Link href="/learn/aws-services" className="sidebar-link">
+                  <span className="sidebar-icon">☁️</span>
+                  <span>AWS Services</span>
+                </Link>
+              </li>
               <li>
                 <Link href="/learn/s3-storage" className="sidebar-link">
                   <span className="sidebar-icon">🪣</span>

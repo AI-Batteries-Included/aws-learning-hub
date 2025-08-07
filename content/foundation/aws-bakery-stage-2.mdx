@@ -1,0 +1,98 @@
+# Stage 2: Recipe Library
+## Recipe Kits and Version Control
+
+<StageHeader 
+  icon="📚" 
+  bakeryTitle="Recipe Kits Stored at the Library"
+  techTitle="Using GitHub for Version Control and Code Storage"
+/>
+
+Your recipe is perfected and ready to share. However, you realize your recipe is currently only available locally - anyone who wants it needs you to give it to them directly. You can't scale this personal approach.
+
+You decide to create complete recipe kits with instructions and ingredients included, so other people can see what your cobbler is all about. But these kits aren't ready-to-eat cobblers - they still need to be assembled and baked.
+
+<BakeryCard 
+  bakeryContent="You package your recipe with pre-measured ingredients and detailed instructions, creating kits that others can use to make the cobbler themselves."
+  techContent="Developers package their code and assets into repositories - downloadable bundles that contain everything needed to run the application, but still require setup and execution to view the final product."
+/>
+
+## The Town Library Solution
+
+You learn that the local library has shelves where you can store useful items for others to check out. The library can't prepare recipe kits into actual cobblers (they're not a bakery!), but they offer something valuable: they keep detailed records of all changes you make to your recipe kits.
+
+The librarians will even compare your different versions to see if there's anything unusual that could ruin the cobbler.
+
+### Your Recipe Evolution
+```bash
+# Your recipe evolution at the library
+Recipe Kit v1.0: Original peach cobbler
+Recipe Kit v1.1: Added cinnamon for warmth  
+Recipe Kit v1.2: Reduced sugar after feedback
+Recipe Kit v2.0: Revolutionary lattice top design
+```
+
+### The GitHub Parallel
+```bash
+# Git version control workflow
+git add .
+git commit -m "Add cinnamon to enhance flavor"
+git push origin main
+
+# View version history
+git log --oneline
+a1b2c3d Add lattice top design
+e4f5g6h Reduce sugar content
+i7j8k9l Add cinnamon spice
+m0n1o2p Initial peach cobbler recipe
+```
+
+<ServiceMapping
+  service="GitHub"
+  bakeryFunction="Town Library Storage System"
+  icon="📚"
+  description="Just like the library, GitHub stores our code repositories for free, making them accessible from anywhere. It tracks every change we make and allows us to compare versions and revert to previous ones when needed."
+  technicalDetails="Distributed version control system that provides unlimited public repositories, collaboration tools, automated testing integration, and deployment workflows."
+  useCases={[
+    "Source code backup and storage",
+    "Team collaboration and code reviews",
+    "Version tracking and rollback capabilities", 
+    "Automated testing and deployment pipelines"
+  ]}
+/>
+
+## The Benefits of Version Control
+
+**For Your Bakery:**
+
+– Safe storage of all recipe versions– Ability to compare different iterations– Collaboration with other bakers– Backup in case original recipe cards are lost
+**For Developers:**
+
+– Complete project history and backup– Collaboration with team members– Branch-based feature development– Integration with deployment systems
+## What You Discover
+
+The library system works great for storage and tracking, but you notice some limitations:
+
+– People still need to get the recipe kit from the library– They have to set up their own kitchen properly– Many don't know how to bake from scratch– Walking everyone through the process is time-consuming
+## The Challenge Ahead
+
+While the library (GitHub) is perfect for storing and tracking recipe kits (code), it doesn't actually serve finished cobblers (live websites) to hungry customers (users).
+
+You need to find a way to deliver finished products directly to people who want to enjoy your cobbler without the complexity of baking it themselves.
+
+---
+
+## Ready for Your Next Challenge?
+
+The recipe kits are safely stored and tracked, but customers want finished cobblers, not baking instructions. How will you handle direct delivery from your home?
+
+<div style={{textAlign: 'center', margin: '2rem 0'}}>
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '500px', margin: '0 auto'}}>
+    <a href="./stage-1" style={{color: 'var(--accent)', textDecoration: 'none', fontWeight: '600'}}>
+      ← Stage 1: Home Kitchen
+    </a>
+    
+    <a href="./stage-3" style={{display: 'inline-block', background: 'linear-gradient(45deg, var(--accent), var(--link-blue))', color: 'white', padding: '1rem 2rem', borderRadius: '25px', textDecoration: 'none', fontWeight: '600'}}>
+      🔥 Stage 3: Home Distribution →
+    </a>
+  </div>
+</div>

@@ -25,7 +25,7 @@ export default function LambdaFunctions() {
         },
         {
           title: 'Environment Setup',
-          href: '/learn/environment-setup',
+          href: '/setup-guide',
           completed: false
         },
         {
@@ -36,19 +36,24 @@ export default function LambdaFunctions() {
       ]}
       nextSteps={[
         {
-          title: 'API Gateway',
-          href: '/learn/api-gateway',
-          description: 'Create REST APIs that trigger your Lambda functions'
+          title: 'Back to AWS Services',
+          href: '/learn/aws-services',
+          description: 'Explore other AWS services and their use cases'
         },
         {
-          title: 'DynamoDB',
-          href: '/learn/dynamodb',
-          description: 'Add serverless databases to your Lambda applications'
+          title: 'S3 Storage',
+          href: '/learn/s3-storage',
+          description: 'Process S3 events with Lambda functions'
         },
         {
           title: 'CloudFormation',
           href: '/learn/cloudformation',
           description: 'Deploy Lambda infrastructure as code'
+        },
+        {
+          title: 'IAM Permissions',
+          href: '/learn/iam-permissions',
+          description: 'Secure your Lambda functions with proper permissions'
         }
       ]}
     >
