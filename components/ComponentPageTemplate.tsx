@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { PageCompletionTracker } from './progress/PageCompletionTracker';
 
 interface Prerequisite {

@@ -76,7 +76,7 @@ export default function Sidebar() {
                   href="/learn" 
                   pageId={pageProgressMap['/learn']}
                   icon="📚" 
-                  text="AWS from Zero"
+                  text="Understanding AWS from Zero"
                   progress={progress}
                 />
               </li>
