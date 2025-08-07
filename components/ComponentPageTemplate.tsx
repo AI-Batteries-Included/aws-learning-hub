@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { PageCompletionTracker } from './progress/PageCompletionTracker';
 
 interface Prerequisite {
   title: string;
@@ -26,6 +27,9 @@ interface ComponentPageTemplateProps {
   infographicPath?: string;
   infographicAlt?: string;
   children: ReactNode;
+  // Progress tracking props
+  pageId?: string;
+  pagePath?: string;
 }
 
 export default function ComponentPageTemplate({
@@ -39,7 +43,9 @@ export default function ComponentPageTemplate({
   awsServices,
   infographicPath,
   infographicAlt,
-  children
+  children,
+  pageId,
+  pagePath
 }: ComponentPageTemplateProps) {
   
   const getDifficultyColor = (level: string) => {
@@ -144,6 +150,18 @@ export default function ComponentPageTemplate({
               </Link>
             ))}
           </div>
+        </section>
+      )}
+
+      {/* Progress Completion Tracker */}
+      {pageId && pagePath && (
+        <section className="completion-tracker-section mt-12 pt-8 border-t border-gray-200">
+          <PageCompletionTracker
+            pageId={pageId}
+            path={pagePath}
+            title={title}
+            className="max-w-2xl mx-auto"
+          />
         </section>
       )}
     </div>

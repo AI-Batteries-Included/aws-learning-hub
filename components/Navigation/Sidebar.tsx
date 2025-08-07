@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useProgressOptional } from '../progress/ProgressContext';
+import { ProgressDashboard } from '../progress/ProgressDashboard';
 
 export default function Sidebar() {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'services']);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['main', 'services', 'progress']);
+  const progress = useProgressOptional(); // Optional to avoid requiring ProgressProvider everywhere
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev => 
@@ -14,9 +17,43 @@ export default function Sidebar() {
     );
   };
 
+  // Map pages to their progress data
+  const pageProgressMap = {
+    '/learn': 'learn-introduction',
+    '/learn/aws-basics': 'aws-basics-introduction', 
+    '/learn/architecture-overview': 'architecture-overview',
+    '/learn/environment-setup': 'environment-setup-introduction',
+    '/learn/aws-services': 'aws-services-introduction',
+    '/learn/s3-storage': 's3-storage-introduction',
+    '/learn/lambda-functions': 'lambda-functions-introduction',
+    '/learn/cloudformation': 'cloudformation-introduction',
+    '/learn/iam-permissions': 'iam-permissions-introduction',
+  };
+
   return (
     <nav className="sidebar">
       <div className="sidebar-content">
+        {/* Progress Overview Section */}
+        {progress && (
+          <div className="sidebar-section">
+            <button 
+              className="sidebar-section-header"
+              onClick={() => toggleSection('progress')}
+            >
+              <span>Your Progress</span>
+              <span className={`sidebar-arrow ${expandedSections.includes('progress') ? 'expanded' : ''}`}>▼</span>
+            </button>
+            {expandedSections.includes('progress') && (
+              <div className="sidebar-progress-section">
+                <ProgressDashboard compact={true} showAchievements={false} showSections={false} />
+                <Link href="/progress" className="sidebar-link mt-4 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-md font-mono text-sm">
+                  📊&nbsp;&nbsp;&nbsp;&nbsp;View Detailed Analytics
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Main Navigation Section */}
         <div className="sidebar-section">
           <button 
@@ -35,28 +72,40 @@ export default function Sidebar() {
                 </Link>
               </li>
               <li>
-                <Link href="/learn" className="sidebar-link">
-                  <span className="sidebar-icon">📚</span>
-                  <span>Understanding AWS from Zero</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn" 
+                  pageId={pageProgressMap['/learn']}
+                  icon="📚" 
+                  text="Understanding AWS from Zero"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/aws-basics" className="sidebar-link">
-                  <span className="sidebar-icon">🔰</span>
-                  <span>Using AWS Products</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/aws-basics" 
+                  pageId={pageProgressMap['/learn/aws-basics']}
+                  icon="🔰" 
+                  text="Using AWS Products"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/architecture-overview" className="sidebar-link">
-                  <span className="sidebar-icon">🏗️</span>
-                  <span>Architecture</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/architecture-overview" 
+                  pageId={pageProgressMap['/learn/architecture-overview']}
+                  icon="🏗️" 
+                  text="Architecture"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/environment-setup" className="sidebar-link">
-                  <span className="sidebar-icon">🛠️</span>
-                  <span>Environment Setup</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/environment-setup" 
+                  pageId={pageProgressMap['/learn/environment-setup']}
+                  icon="🛠️" 
+                  text="Environment Setup"
+                  progress={progress}
+                />
               </li>
             </ul>
           )}
@@ -74,39 +123,112 @@ export default function Sidebar() {
           {expandedSections.includes('services') && (
             <ul className="sidebar-list">
               <li>
-                <Link href="/learn/aws-services" className="sidebar-link">
-                  <span className="sidebar-icon">☁️</span>
-                  <span>AWS Services</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/aws-services" 
+                  pageId={pageProgressMap['/learn/aws-services']}
+                  icon="☁️" 
+                  text="AWS Services"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/s3-storage" className="sidebar-link">
-                  <span className="sidebar-icon">🪣</span>
-                  <span>S3 Storage</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/s3-storage" 
+                  pageId={pageProgressMap['/learn/s3-storage']}
+                  icon="🪣" 
+                  text="S3 Storage"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/lambda-functions" className="sidebar-link">
-                  <span className="sidebar-icon">⚡</span>
-                  <span>Lambda Functions</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/lambda-functions" 
+                  pageId={pageProgressMap['/learn/lambda-functions']}
+                  icon="⚡" 
+                  text="Lambda Functions"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/cloudformation" className="sidebar-link">
-                  <span className="sidebar-icon">📋</span>
-                  <span>CloudFormation</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/cloudformation" 
+                  pageId={pageProgressMap['/learn/cloudformation']}
+                  icon="📋" 
+                  text="CloudFormation"
+                  progress={progress}
+                />
               </li>
               <li>
-                <Link href="/learn/iam-permissions" className="sidebar-link">
-                  <span className="sidebar-icon">🔐</span>
-                  <span>IAM Permissions</span>
-                </Link>
+                <SidebarLinkWithProgress 
+                  href="/learn/iam-permissions" 
+                  pageId={pageProgressMap['/learn/iam-permissions']}
+                  icon="🔐" 
+                  text="IAM Permissions"
+                  progress={progress}
+                />
               </li>
             </ul>
           )}
         </div>
       </div>
     </nav>
+  );
+}
+
+/**
+ * Sidebar link with progress indicator
+ */
+interface SidebarLinkWithProgressProps {
+  href: string;
+  pageId: string;
+  icon: string;
+  text: string;
+  progress: {
+    getPageProgress: (pageId: string) => {
+      completed?: boolean;
+      inProgress?: boolean;
+      visitCount?: number;
+    } | null;
+  } | null;
+}
+
+function SidebarLinkWithProgress({ 
+  href, 
+  pageId, 
+  icon, 
+  text, 
+  progress 
+}: SidebarLinkWithProgressProps) {
+  if (!progress) {
+    // Fallback to regular link if no progress context
+    return (
+      <Link href={href} className="sidebar-link">
+        <span className="sidebar-icon">{icon}</span>
+        <span>{text}</span>
+      </Link>
+    );
+  }
+
+  const pageProgress = progress.getPageProgress(pageId);
+  const isCompleted = pageProgress?.completed || false;
+  const isInProgress = pageProgress?.inProgress || false;
+  const visitCount = pageProgress?.visitCount || 0;
+
+  return (
+    <Link href={href} className={`sidebar-link ${isCompleted ? 'completed' : isInProgress ? 'in-progress' : ''}`}>
+      <span className="sidebar-icon">{icon}</span>
+      <span className="flex-1">{text}</span>
+      <span className="sidebar-progress-indicator">
+        {isCompleted && (
+          <span className="text-green-500 text-xs" title="Completed">✓</span>
+        )}
+        {!isCompleted && isInProgress && (
+          <span className="text-blue-500 text-xs" title="In Progress">●</span>
+        )}
+        {!isCompleted && !isInProgress && visitCount > 0 && (
+          <span className="text-gray-400 text-xs" title="Visited">○</span>
+        )}
+      </span>
+    </Link>
   );
 }

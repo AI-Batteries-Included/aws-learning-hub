@@ -1,9 +1,10 @@
-import FoundationCard from '../../components/FoundationCard';
+'use client';
 
-export const metadata = {
-  title: 'Learn - AWS Learning Hub',
-  description: 'Comprehensive AWS learning resources organized by foundation and components'
-};
+import FoundationCard from '../../components/FoundationCard';
+import { PageCompletionTracker } from '../../components/progress/PageCompletionTracker';
+
+// Note: metadata export removed due to 'use client' directive
+// This page is now client-side rendered for progress tracking
 
 export default function LearnHub() {
   return (
@@ -77,6 +78,18 @@ export default function LearnHub() {
             <p>Infrastructure as Code templates</p>
           </div>
         </div>
+      </section>
+
+      {/* Progress Completion Tracker */}
+      <section className="completion-tracker-section mt-12 pt-8 border-t border-gray-200">
+        <PageCompletionTracker
+          pageId="learn-introduction"
+          path="/learn"
+          title="Learn AWS"
+          className="max-w-2xl mx-auto"
+          scrollThreshold={70}
+          timeThreshold={20}
+        />
       </section>
     </div>
   );
