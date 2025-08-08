@@ -140,43 +140,7 @@ export default function CollapsibleSection({
         <div className={`section-content ${isExpanded ? 'expanded' : 'collapsed'}`}>
           <div className="content-wrapper">
             <div className="content-vertical">
-              <div className="text-container">
-                <div className="main-text-box">
-                  {children}
-                </div>
-              </div>
-              <div className="svg-container">
-                <div className="svg-placeholder">
-                  <svg 
-                    width="300" 
-                    height="200" 
-                    viewBox="0 0 300 200" 
-                    fill="none" 
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect 
-                      x="0" 
-                      y="0" 
-                      width="300" 
-                      height="200" 
-                      fill="#f7fafc" 
-                      stroke="#e2e8f0" 
-                      strokeWidth="2" 
-                      rx="8"
-                    />
-                    <text 
-                      x="150" 
-                      y="100" 
-                      textAnchor="middle" 
-                      dominantBaseline="middle" 
-                      fill="#718096" 
-                      fontSize="16"
-                    >
-                      SVG Content
-                    </text>
-                  </svg>
-                </div>
-              </div>
+              {children}
             </div>
           </div>
         </div>
